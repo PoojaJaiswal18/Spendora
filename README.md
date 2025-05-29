@@ -1,0 +1,1 @@
+"# Spendora - Smart Receipt Organizer" 
