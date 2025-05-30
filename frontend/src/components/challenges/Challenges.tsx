@@ -5,7 +5,7 @@ import {
   CardContent,
   Typography,
   Button,
-  Grid,
+ Grid, 
   Chip,
   Avatar,
   LinearProgress,
@@ -177,9 +177,9 @@ const Challenges: React.FC = () => {
         </Box>
       </Fade>
 
-      {/* Stats Overview */}
+      {/* Stats Overview - FIXED: Updated Grid syntax for MUI v7 */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Grow in timeout={500}>
             <Card
               className="interactive-card"
@@ -212,7 +212,7 @@ const Challenges: React.FC = () => {
           </Grow>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Grow in timeout={600}>
             <Card
               className="interactive-card"
@@ -246,7 +246,7 @@ const Challenges: React.FC = () => {
           </Grow>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Grow in timeout={700}>
             <Card
               className="interactive-card"
@@ -280,7 +280,7 @@ const Challenges: React.FC = () => {
           </Grow>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Grow in timeout={800}>
             <Card
               className="interactive-card"
@@ -341,11 +341,11 @@ const Challenges: React.FC = () => {
         </Box>
       </Fade>
 
-      {/* Active Challenges Tab */}
+      {/* Active Challenges Tab - FIXED: Updated Grid syntax for MUI v7 */}
       {activeTab === 0 && (
         <Grid container spacing={3}>
           {challenges.map((challenge, index) => (
-            <Grid item xs={12} lg={6} key={challenge.id}>
+            <Grid size={{ xs: 12, lg: 6 }} key={challenge.id}>
               <Grow in timeout={1000 + index * 100}>
                 <Card
                   className="interactive-card"
@@ -469,11 +469,11 @@ const Challenges: React.FC = () => {
         </Grid>
       )}
 
-      {/* Completed Challenges Tab */}
+      {/* Completed Challenges Tab - FIXED: Updated Grid syntax for MUI v7 */}
       {activeTab === 1 && (
         <Grid container spacing={3}>
           {completedChallenges.map((challenge, index) => (
-            <Grid item xs={12} md={6} key={challenge.id}>
+            <Grid size={{ xs: 12, md: 6 }} key={challenge.id}>
               <Grow in timeout={1000 + index * 100}>
                 <Card
                   className="hover-lift"

@@ -19,7 +19,9 @@ export type StorageKey =
   | 'uploadHistory'      
   | 'processedReceipts'
   | 'reportHistory'    
-  | 'exportHistory';; 
+  | 'exportHistory'
+  | 'challengeHistory'    
+  | 'userChallenges'; 
 
 export interface StorageOptions {
   encrypt?: boolean;
