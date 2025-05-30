@@ -5,8 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a96b0ffe-0eec-43ea-ba79-788004bd181b" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/jaiswal/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jaiswal/config/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/jaiswal/config/MongoConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jaiswal/config/MongoConfig.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -77,7 +76,7 @@
       <workItem from="1748530115275" duration="490000" />
       <workItem from="1748536305954" duration="506000" />
       <workItem from="1748542381445" duration="386000" />
-      <workItem from="1748618333205" duration="1854000" />
+      <workItem from="1748618333205" duration="1929000" />
     </task>
     <servers />
   </component>
