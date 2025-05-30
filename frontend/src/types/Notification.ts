@@ -1,3 +1,6 @@
+// Import DeviceInfo from Auth types
+import { DeviceInfo } from './Auth';
+
 export interface Notification {
   id: string;
   userId: string;
@@ -96,12 +99,26 @@ export interface ChannelSetting {
   frequency?: 'immediate' | 'hourly' | 'daily' | 'weekly';
 }
 
+// Fixed: Removed mapped type syntax error
 export interface TypePreferences {
-  [key in NotificationType]: {
-    enabled: boolean;
-    channels: NotificationChannel[];
-    priority: NotificationPriority;
-  };
+  budget_alert: TypePreferenceSetting;
+  spending_limit: TypePreferenceSetting;
+  receipt_processed: TypePreferenceSetting;
+  challenge_update: TypePreferenceSetting;
+  achievement_earned: TypePreferenceSetting;
+  report_ready: TypePreferenceSetting;
+  payment_reminder: TypePreferenceSetting;
+  security_alert: TypePreferenceSetting;
+  system_update: TypePreferenceSetting;
+  promotional: TypePreferenceSetting;
+  social: TypePreferenceSetting;
+  reminder: TypePreferenceSetting;
+}
+
+export interface TypePreferenceSetting {
+  enabled: boolean;
+  channels: NotificationChannel[];
+  priority: NotificationPriority;
 }
 
 export interface SchedulePreferences {
@@ -173,6 +190,14 @@ export interface AudienceFilter {
   criteria?: FilterCriteria[];
   excludeUserIds?: string[];
   maxAudience?: number;
+}
+
+// Added missing FilterCriteria interface
+export interface FilterCriteria {
+  field: string;
+  operator: 'equals' | 'not_equals' | 'contains' | 'not_contains' | 'greater_than' | 'less_than' | 'in' | 'not_in';
+  value: any;
+  type: 'string' | 'number' | 'boolean' | 'date' | 'array';
 }
 
 export interface CampaignSchedule {
