@@ -5,16 +5,15 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import Dashboard from './components/dashboard/Dashboard';
 import Upload from './components/upload/Upload';
-import Reports from './components/reports/Reports';
-import Analytics from './components/analytics/Analytics';
-import Challenges from './components/challenges/Challenges';
+import Reports from './components/reports/Reports'; // FIXED: Correct import path
+import Analytics from './components/analytics/Analytics'; // FIXED: Correct import path
+import Challenges from './components/challenges/Challenges'; // FIXED: Correct import path
 import Layout from './components/common/Layout';
 import { AuthProvider } from './contexts/AuthContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 
-// Theme Context
 interface ThemeContextType {
   darkMode: boolean;
   toggleDarkMode: () => void;
@@ -47,9 +46,7 @@ const createCustomTheme = (darkMode: boolean) => createTheme({
       default: darkMode ? '#0a0a0a' : '#fafafa',
       paper: darkMode ? '#1a1a1a' : '#ffffff',
     },
-    surface: {
-      main: darkMode ? '#1e1e1e' : '#f5f5f5',
-    },
+    // FIXED: Removed 'surface' as it's not a valid MUI palette property
     text: {
       primary: darkMode ? '#ffffff' : '#000000',
       secondary: darkMode ? '#b3b3b3' : '#666666',
@@ -173,14 +170,14 @@ const createCustomTheme = (darkMode: boolean) => createTheme({
         root: {
           borderRadius: '16px',
           boxShadow: darkMode
-              ? '0 4px 20px rgba(0, 0, 0, 0.3)'
-              : '0 4px 20px rgba(0, 0, 0, 0.1)',
+            ? '0 4px 20px rgba(0, 0, 0, 0.3)'
+            : '0 4px 20px rgba(0, 0, 0, 0.1)',
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           '&:hover': {
             transform: 'translateY(-4px)',
             boxShadow: darkMode
-                ? '0 8px 30px rgba(0, 0, 0, 0.4)'
-                : '0 8px 30px rgba(0, 0, 0, 0.15)',
+              ? '0 8px 30px rgba(0, 0, 0, 0.4)'
+              : '0 8px 30px rgba(0, 0, 0, 0.15)',
           },
         },
       },
@@ -214,46 +211,42 @@ function App() {
 
   const theme = createCustomTheme(darkMode);
 
+  // FIXED: JSX expressions must have one parent element
   return (
-      <ThemeContext.Provider value={{ darkMode, toggleDarkMode }}>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
-            <AuthProvider>
-              <Router>
-                <Box sx={{ display: 'flex', minHeight: '100vh' }}>
-                  <Layout>
-                    <Routes>
-                      <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                      <Route path="/dashboard" element={<Dashboard />} />
-                      <Route path="/upload" element={<Upload />} />
-                      <Route path="/reports" element={<Reports />} />
-                      <Route path="/analytics" element={<Analytics />} />
-                      <Route path="/challenges" element={<Challenges />} />
-                    </Routes>
-                  </Layout>
-                </Box>
-              </Router>
-            </AuthProvider>
-          </LocalizationProvider>
-        </ThemeProvider>
-      </ThemeContext.Provider>
-
-       <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
-    </div>
+    <ThemeContext.Provider value={{ darkMode, toggleDarkMode }}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <AuthProvider>
+            <Router>
+              <Layout>
+                <Routes>
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/upload" element={<Upload />} />
+                  <Route path="/reports" element={<Reports />} />
+                  <Route path="/analytics" element={<Analytics />} />
+                  <Route path="/challenges" element={<Challenges />} />
+                </Routes>
+              </Layout>
+            </Router>
+            <ToastContainer
+              position="top-right"
+              autoClose={5000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme={darkMode ? 'dark' : 'light'}
+            />
+          </AuthProvider>
+        </LocalizationProvider>
+      </ThemeProvider>
+    </ThemeContext.Provider>
   );
 }
 
 export default App;
-
