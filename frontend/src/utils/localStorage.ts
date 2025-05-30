@@ -13,7 +13,8 @@ export type StorageKey =
   | 'lastSyncTime'
   | 'offlineData'
   | 'tempUploads'
-  | 'analyticsTimeRange'; // Added for Analytics component
+  | 'analyticsTimeRange'
+  | 'recentPages'  ; 
 
 export interface StorageOptions {
   encrypt?: boolean;
