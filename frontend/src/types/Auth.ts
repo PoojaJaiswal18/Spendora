@@ -1,3 +1,170 @@
+// Base user interfaces
+export interface UserPreferences {
+  language: string;
+  currency: string;
+  timezone: string;
+  dateFormat: string;
+  timeFormat: '12h' | '24h';
+  theme: 'light' | 'dark' | 'auto';
+  notifications: NotificationSettings;
+  privacy: PrivacySettings;
+  accessibility: AccessibilitySettings;
+  dashboard: DashboardSettings;
+}
+
+export interface UserProfile {
+  bio?: string;
+  website?: string;
+  location?: string;
+  company?: string;
+  jobTitle?: string;
+  phoneNumber?: string;
+  dateOfBirth?: string;
+  gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say';
+  profileVisibility: 'public' | 'private' | 'friends_only';
+  socialLinks: SocialLinks;
+  interests: string[];
+  skills: string[];
+  achievements: Achievement[];
+}
+
+export interface UserSubscription {
+  id: string;
+  planId: string;
+  planName: string;
+  planType: 'free' | 'basic' | 'premium' | 'enterprise';
+  status: 'active' | 'inactive' | 'cancelled' | 'expired' | 'trial';
+  startDate: string;
+  endDate?: string;
+  trialEndDate?: string;
+  autoRenew: boolean;
+  features: SubscriptionFeature[];
+  usage: UsageMetrics;
+  billing: BillingInfo;
+  paymentMethod?: PaymentMethod;
+}
+
+export interface NotificationSettings {
+  email: boolean;
+  push: boolean;
+  sms: boolean;
+  inApp: boolean;
+  marketing: boolean;
+  security: boolean;
+  updates: boolean;
+  frequency: 'immediate' | 'hourly' | 'daily' | 'weekly';
+}
+
+export interface PrivacySettings {
+  profileVisibility: 'public' | 'private' | 'friends_only';
+  showEmail: boolean;
+  showPhone: boolean;
+  showLocation: boolean;
+  allowDataCollection: boolean;
+  allowAnalytics: boolean;
+  allowMarketing: boolean;
+}
+
+export interface AccessibilitySettings {
+  fontSize: 'small' | 'medium' | 'large' | 'extra_large';
+  highContrast: boolean;
+  reducedMotion: boolean;
+  screenReader: boolean;
+  keyboardNavigation: boolean;
+}
+
+export interface DashboardSettings {
+  layout: 'grid' | 'list' | 'compact';
+  widgets: DashboardWidget[];
+  defaultView: 'overview' | 'analytics' | 'transactions' | 'budgets';
+  refreshInterval: number;
+}
+
+export interface DashboardWidget {
+  id: string;
+  type: string;
+  position: { x: number; y: number };
+  size: { width: number; height: number };
+  settings: Record<string, any>;
+  isVisible: boolean;
+}
+
+export interface SocialLinks {
+  twitter?: string;
+  linkedin?: string;
+  github?: string;
+  facebook?: string;
+  instagram?: string;
+  website?: string;
+}
+
+export interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  earnedAt: string;
+  category: string;
+  points: number;
+}
+
+export interface SubscriptionFeature {
+  name: string;
+  description: string;
+  included: boolean;
+  limit?: number;
+  unlimited: boolean;
+}
+
+export interface UsageMetrics {
+  transactions: { used: number; limit: number };
+  budgets: { used: number; limit: number };
+  reports: { used: number; limit: number };
+  storage: { used: number; limit: number };
+  apiCalls: { used: number; limit: number };
+}
+
+export interface BillingInfo {
+  amount: number;
+  currency: string;
+  interval: 'monthly' | 'yearly';
+  nextBillingDate?: string;
+  lastBillingDate?: string;
+  invoices: Invoice[];
+}
+
+export interface Invoice {
+  id: string;
+  amount: number;
+  currency: string;
+  status: 'paid' | 'pending' | 'failed' | 'refunded';
+  date: string;
+  downloadUrl?: string;
+}
+
+export interface PaymentMethod {
+  id: string;
+  type: 'card' | 'bank' | 'paypal' | 'stripe';
+  last4?: string;
+  brand?: string;
+  expiryMonth?: number;
+  expiryYear?: number;
+  isDefault: boolean;
+}
+
+export interface DeviceInfo {
+  deviceId: string;
+  deviceName: string;
+  deviceType: 'mobile' | 'tablet' | 'desktop' | 'unknown';
+  operatingSystem: string;
+  browser: string;
+  userAgent: string;
+  screenResolution?: string;
+  timezone: string;
+  language: string;
+}
+
+// Main Auth interfaces
 export interface AuthUser {
   id: string;
   email: string;
@@ -95,18 +262,6 @@ export interface SessionInfo {
   createdAt: string;
   expiresAt: string;
   isActive: boolean;
-}
-
-export interface DeviceInfo {
-  deviceId: string;
-  deviceName: string;
-  deviceType: 'mobile' | 'tablet' | 'desktop' | 'unknown';
-  operatingSystem: string;
-  browser: string;
-  userAgent: string;
-  screenResolution?: string;
-  timezone: string;
-  language: string;
 }
 
 export interface TwoFactorMethod {
