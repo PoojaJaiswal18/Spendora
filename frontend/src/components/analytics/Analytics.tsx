@@ -4,7 +4,7 @@ import {
   Card,
   CardContent,
   Typography,
-  Grid,
+  Grid, // Using new Grid (formerly Grid2)
   Chip,
   Avatar,
   LinearProgress,
@@ -27,20 +27,53 @@ import {
   CalendarMonth,
 } from '@mui/icons-material';
 import { Line, Doughnut, Bar, Radar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  BarElement,
+  RadialLinearScale,
+} from 'chart.js';
 import { formatCurrency, formatPercentage } from '../../utils/formatters';
 import { COLORS, ANIMATION_DURATIONS } from '../../utils/constants';
-import { localStorage } from '../../utils/localStorage';
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  BarElement,
+  RadialLinearScale
+);
 
 const Analytics: React.FC = () => {
   const theme = useTheme();
-  const [timeRange, setTimeRange] = useState('month');
+  const [timeRange, setTimeRange] = useState<string>('month');
 
-  const handleTimeRangeChange = (event: React.MouseEvent<HTMLElement>, newTimeRange: string) => {
+  const handleTimeRangeChange = (
+    event: React.MouseEvent<HTMLElement>,
+    newTimeRange: string | null
+  ) => {
     if (newTimeRange !== null) {
       setTimeRange(newTimeRange);
       
-      // Store user preference
-      localStorage.setItem('analyticsTimeRange', newTimeRange);
+      // Store user preference in localStorage
+      try {
+        localStorage.setItem('analyticsTimeRange', newTimeRange);
+      } catch (error) {
+        console.warn('Failed to save analytics time range preference:', error);
+      }
     }
   };
 
@@ -135,7 +168,7 @@ const Analytics: React.FC = () => {
           padding: 20,
           font: {
             family: 'Inter, sans-serif',
-            weight: '500',
+            weight: 500 as const, // FIXED: Use proper type
           },
         },
       },
@@ -148,10 +181,11 @@ const Analytics: React.FC = () => {
         cornerRadius: 12,
         titleFont: {
           family: 'Inter, sans-serif',
-          weight: '600',
+          weight: 600 as const, // FIXED: Use proper type
         },
         bodyFont: {
           family: 'Inter, sans-serif',
+          weight: 'normal' as const, // FIXED: Use proper type
         },
       },
     },
@@ -169,6 +203,42 @@ const Analytics: React.FC = () => {
           font: { family: 'Inter, sans-serif' }
         },
         grid: { color: theme.palette.divider },
+      },
+    },
+  };
+
+  const doughnutOptions = {
+    ...chartOptions,
+    plugins: {
+      legend: {
+        position: 'bottom' as const,
+        labels: {
+          color: theme.palette.text.primary,
+          usePointStyle: true,
+          padding: 15,
+          font: {
+            family: 'Inter, sans-serif',
+            weight: 500 as const, // FIXED: Use proper type
+          },
+        },
+      },
+      tooltip: chartOptions.plugins.tooltip,
+    },
+  };
+
+  const radarOptions = {
+    ...chartOptions,
+    scales: {
+      r: {
+        ticks: { 
+          color: theme.palette.text.secondary,
+          font: { family: 'Inter, sans-serif' }
+        },
+        grid: { color: theme.palette.divider },
+        pointLabels: { 
+          color: theme.palette.text.primary,
+          font: { family: 'Inter, sans-serif' }
+        },
       },
     },
   };
@@ -266,10 +336,10 @@ const Analytics: React.FC = () => {
         </Box>
       </Fade>
 
-      {/* Insights Cards */}
+      {/* Insights Cards - FIXED: Updated Grid syntax for MUI v7 */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {insights.map((insight, index) => (
-          <Grid item xs={12} sm={6} lg={3} key={insight.title}>
+          <Grid size={{ xs: 12, sm: 6, lg: 3 }} key={insight.title}>
             <Grow in timeout={600 + index * 100}>
               <Card
                 className="interactive-card"
@@ -331,9 +401,9 @@ const Analytics: React.FC = () => {
         ))}
       </Grid>
 
-      {/* Charts Section */}
+      {/* Charts Section - FIXED: Updated Grid syntax for MUI v7 */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} lg={8}>
+        <Grid size={{ xs: 12, lg: 8 }}>
           <Grow in timeout={1000}>
             <Card className="hover-lift">
               <CardContent sx={{ p: 3 }}>
@@ -363,7 +433,7 @@ const Analytics: React.FC = () => {
           </Grow>
         </Grid>
 
-        <Grid item xs={12} lg={4}>
+        <Grid size={{ xs: 12, lg: 4 }}>
           <Grow in timeout={1200}>
             <Card className="hover-lift">
               <CardContent sx={{ p: 3 }}>
@@ -371,26 +441,7 @@ const Analytics: React.FC = () => {
                   Category Distribution
                 </Typography>
                 <Box sx={{ height: 350 }}>
-                  <Doughnut 
-                    data={categoryData} 
-                    options={{
-                      ...chartOptions,
-                      plugins: {
-                        legend: {
-                          position: 'bottom',
-                          labels: {
-                            color: theme.palette.text.primary,
-                            usePointStyle: true,
-                            padding: 15,
-                            font: {
-                              family: 'Inter, sans-serif',
-                              weight: '500',
-                            },
-                          },
-                        },
-                      },
-                    }} 
-                  />
+                  <Doughnut data={categoryData} options={doughnutOptions} />
                 </Box>
               </CardContent>
             </Card>
@@ -399,7 +450,7 @@ const Analytics: React.FC = () => {
       </Grid>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} lg={6}>
+        <Grid size={{ xs: 12, lg: 6 }}>
           <Grow in timeout={1400}>
             <Card className="hover-lift">
               <CardContent sx={{ p: 3 }}>
@@ -414,7 +465,7 @@ const Analytics: React.FC = () => {
           </Grow>
         </Grid>
 
-        <Grid item xs={12} lg={6}>
+        <Grid size={{ xs: 12, lg: 6 }}>
           <Grow in timeout={1600}>
             <Card className="hover-lift">
               <CardContent sx={{ p: 3 }}>
@@ -422,25 +473,7 @@ const Analytics: React.FC = () => {
                   Spending Behavior Analysis
                 </Typography>
                 <Box sx={{ height: 300 }}>
-                  <Radar 
-                    data={spendingPatternData} 
-                    options={{
-                      ...chartOptions,
-                      scales: {
-                        r: {
-                          ticks: { 
-                            color: theme.palette.text.secondary,
-                            font: { family: 'Inter, sans-serif' }
-                          },
-                          grid: { color: theme.palette.divider },
-                          pointLabels: { 
-                            color: theme.palette.text.primary,
-                            font: { family: 'Inter, sans-serif' }
-                          },
-                        },
-                      },
-                    }} 
-                  />
+                  <Radar data={spendingPatternData} options={radarOptions} />
                 </Box>
               </CardContent>
             </Card>
@@ -474,7 +507,7 @@ const Analytics: React.FC = () => {
             </Box>
 
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Box sx={{ p: 3, borderRadius: 2, background: `${theme.palette.background.default}50` }}>
                   <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: 'Inter, sans-serif' }}>
                     💡 Smart Recommendations
@@ -502,7 +535,7 @@ const Analytics: React.FC = () => {
                 </Box>
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Box sx={{ p: 3, borderRadius: 2, background: `${theme.palette.background.default}50` }}>
                   <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: 'Inter, sans-serif' }}>
                     📊 Trend Predictions
