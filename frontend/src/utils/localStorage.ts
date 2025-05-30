@@ -12,7 +12,8 @@ export type StorageKey =
   | 'onboardingCompleted'
   | 'lastSyncTime'
   | 'offlineData'
-  | 'tempUploads';
+  | 'tempUploads'
+  | 'analyticsTimeRange'; // Added for Analytics component
 
 export interface StorageOptions {
   encrypt?: boolean;
@@ -63,7 +64,8 @@ class LocalStorageManager {
         serializedValue = this.encrypt(serializedValue);
       }
 
-      localStorage.setItem(this.getKey(key), serializedValue);
+      // Use native localStorage directly for internal operations
+      window.localStorage.setItem(this.getKey(key), serializedValue);
       return true;
     } catch (error) {
       console.error(`Failed to set localStorage item ${key}:`, error);
@@ -76,7 +78,7 @@ class LocalStorageManager {
    */
   getItem<T>(key: StorageKey, defaultValue?: T): T | undefined {
     try {
-      const rawValue = localStorage.getItem(this.getKey(key));
+      const rawValue = window.localStorage.getItem(this.getKey(key));
       if (!rawValue) return defaultValue;
 
       let serializedValue = rawValue;
@@ -111,7 +113,7 @@ class LocalStorageManager {
    */
   removeItem(key: StorageKey): boolean {
     try {
-      localStorage.removeItem(this.getKey(key));
+      window.localStorage.removeItem(this.getKey(key));
       return true;
     } catch (error) {
       console.error(`Failed to remove localStorage item ${key}:`, error);
@@ -124,11 +126,11 @@ class LocalStorageManager {
    */
   clear(): boolean {
     try {
-      const keys = Object.keys(localStorage).filter(key => 
+      const keys = Object.keys(window.localStorage).filter(key => 
         key.startsWith(this.prefix)
       );
       
-      keys.forEach(key => localStorage.removeItem(key));
+      keys.forEach(key => window.localStorage.removeItem(key));
       return true;
     } catch (error) {
       console.error('Failed to clear localStorage:', error);
@@ -143,10 +145,13 @@ class LocalStorageManager {
     try {
       const items: Record<string, any> = {};
       
-      Object.keys(localStorage).forEach(key => {
+      Object.keys(window.localStorage).forEach(key => {
         if (key.startsWith(this.prefix)) {
-          const appKey = key.replace(this.prefix, '') as StorageKey;
-          items[appKey] = this.getItem(appKey);
+          const appKey = key.replace(this.prefix, '');
+          // Only process valid StorageKeys
+          if (this.isValidStorageKey(appKey)) {
+            items[appKey] = this.getItem(appKey as StorageKey);
+          }
         }
       });
       
@@ -163,9 +168,11 @@ class LocalStorageManager {
   isAvailable(): boolean {
     try {
       const testKey = '__localStorage_test__';
-      localStorage.setItem(testKey, 'test');
-      localStorage.removeItem(testKey);
-      return true;
+      const testValue = 'test';
+      window.localStorage.setItem(testKey, testValue);
+      const retrieved = window.localStorage.getItem(testKey);
+      window.localStorage.removeItem(testKey);
+      return retrieved === testValue;
     } catch {
       return false;
     }
@@ -185,9 +192,12 @@ class LocalStorageManager {
       let total = 5 * 1024 * 1024; // 5MB default limit
 
       // Calculate used space
-      for (let key in localStorage) {
-        if (localStorage.hasOwnProperty(key)) {
-          used += localStorage[key].length + key.length;
+      for (let key in window.localStorage) {
+        if (window.localStorage.hasOwnProperty(key)) {
+          const value = window.localStorage.getItem(key);
+          if (value) {
+            used += value.length + key.length;
+          }
         }
       }
 
@@ -198,16 +208,29 @@ class LocalStorageManager {
         let tempUsed = used;
 
         while (tempUsed < total) {
-          localStorage.setItem(testKey, testData);
-          tempUsed += testData.length + testKey.length;
-          testKey += '0';
+          try {
+            window.localStorage.setItem(testKey, testData);
+            tempUsed += testData.length + testKey.length;
+            testKey += '0';
+          } catch {
+            // Hit the limit
+            window.localStorage.removeItem(testKey.slice(0, -1));
+            break;
+          }
         }
+        
+        // Clean up test keys
+        Object.keys(window.localStorage).forEach(key => {
+          if (key.startsWith('test')) {
+            window.localStorage.removeItem(key);
+          }
+        });
       } catch {
         // Hit the limit, total is approximately tempUsed
       }
 
-      const available = total - used;
-      const percentage = (used / total) * 100;
+      const available = Math.max(0, total - used);
+      const percentage = total > 0 ? (used / total) * 100 : 0;
 
       return { used, available, total, percentage };
     } catch (error) {
@@ -219,10 +242,12 @@ class LocalStorageManager {
   /**
    * Batch operations
    */
-  setMultiple(items: Record<StorageKey, any>, options: StorageOptions = {}): boolean {
+  setMultiple(items: Partial<Record<StorageKey, any>>, options: StorageOptions = {}): boolean {
     try {
       Object.entries(items).forEach(([key, value]) => {
-        this.setItem(key as StorageKey, value, options);
+        if (this.isValidStorageKey(key)) {
+          this.setItem(key as StorageKey, value, options);
+        }
       });
       return true;
     } catch (error) {
@@ -254,16 +279,41 @@ class LocalStorageManager {
     return `${this.prefix}${key}`;
   }
 
+  private isValidStorageKey(key: string): key is StorageKey {
+    const validKeys: StorageKey[] = [
+      'authToken',
+      'refreshToken',
+      'userPreferences',
+      'recentSearches',
+      'dashboardLayout',
+      'themeMode',
+      'language',
+      'currency',
+      'dateFormat',
+      'notifications',
+      'onboardingCompleted',
+      'lastSyncTime',
+      'offlineData',
+      'tempUploads',
+      'analyticsTimeRange'
+    ];
+    return validKeys.includes(key as StorageKey);
+  }
+
   private encrypt(data: string): string {
     // Simple XOR encryption for demo purposes
     // In production, use a proper encryption library
-    let encrypted = '';
-    for (let i = 0; i < data.length; i++) {
-      encrypted += String.fromCharCode(
-        data.charCodeAt(i) ^ this.encryptionKey.charCodeAt(i % this.encryptionKey.length)
-      );
+    try {
+      let encrypted = '';
+      for (let i = 0; i < data.length; i++) {
+        encrypted += String.fromCharCode(
+          data.charCodeAt(i) ^ this.encryptionKey.charCodeAt(i % this.encryptionKey.length)
+        );
+      }
+      return btoa(encrypted);
+    } catch {
+      return data;
     }
-    return btoa(encrypted);
   }
 
   private decrypt(encryptedData: string): string {
@@ -284,9 +334,13 @@ class LocalStorageManager {
   private compress(data: string): string {
     // Simple compression using repeated character replacement
     // In production, use a proper compression library like pako
-    return data
-      .replace(/(.)\1{2,}/g, (match, char) => `${char}*${match.length}`)
-      .replace(/\s{2,}/g, (match) => ` *${match.length}`);
+    try {
+      return data
+        .replace(/(.)\1{2,}/g, (match, char) => `${char}*${match.length}`)
+        .replace(/\s{2,}/g, (match) => ` *${match.length}`);
+    } catch {
+      return data;
+    }
   }
 
   private decompress(compressedData: string): string {
@@ -349,7 +403,7 @@ export const preferencesHelpers = {
   setPreferences: (prefs: any) => setItem('userPreferences', prefs),
   getPreferences: () => getItem('userPreferences', {}),
   updatePreference: (key: string, value: any) => {
-    const prefs = getItem('userPreferences', {});
+    const prefs = getItem('userPreferences', {}) || {};
     setItem('userPreferences', { ...prefs, [key]: value });
   },
 };
@@ -362,10 +416,13 @@ export const cacheHelpers = {
     setItem('recentSearches', searches.slice(0, 10)),
   
   addRecentSearch: (search: string) => {
-    const recent = getItem<string[]>('recentSearches', []);
+    const recent = getItem<string[]>('recentSearches', []) || [];
     const updated = [search, ...recent.filter(s => s !== search)].slice(0, 10);
     setItem('recentSearches', updated);
   },
   
-  getRecentSearches: () => getItem<string[]>('recentSearches', []),
+  getRecentSearches: () => getItem<string[]>('recentSearches', []) || [],
 };
+
+// Export default for backward compatibility
+export default localStorage;
