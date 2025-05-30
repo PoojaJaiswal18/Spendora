@@ -1,5 +1,30 @@
-import { apiUtils, authUtils } from './api';
+import { apiUtils } from './api';
 import { User } from '../types';
+
+// Create a simple auth utility class since authUtils is not available
+class AuthUtils {
+  private readonly TOKEN_KEY = 'accessToken';
+  private readonly REFRESH_TOKEN_KEY = 'refreshToken';
+
+  setToken(token: string): void {
+    localStorage.setItem(this.TOKEN_KEY, token);
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem(this.TOKEN_KEY);
+  }
+
+  removeToken(): void {
+    localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
+  }
+
+  isAuthenticated(): boolean {
+    return !!this.getToken();
+  }
+}
+
+const authUtils = new AuthUtils();
 
 export interface LoginRequest {
   email: string;
@@ -137,13 +162,11 @@ class UserService {
   async login(request: LoginRequest): Promise<AuthResponse> {
     try {
       const response = await apiUtils.post<AuthResponse>(`${this.authUrl}/login`, request);
-      
       // Store tokens
       authUtils.setToken(response.accessToken);
       if (response.refreshToken) {
         localStorage.setItem('refreshToken', response.refreshToken);
       }
-
       return response;
     } catch (error) {
       console.error('Login failed:', error);
@@ -157,13 +180,11 @@ class UserService {
   async register(request: RegisterRequest): Promise<AuthResponse> {
     try {
       const response = await apiUtils.post<AuthResponse>(`${this.authUrl}/register`, request);
-      
       // Store tokens
       authUtils.setToken(response.accessToken);
       if (response.refreshToken) {
         localStorage.setItem('refreshToken', response.refreshToken);
       }
-
       return response;
     } catch (error) {
       console.error('Registration failed:', error);
@@ -233,15 +254,17 @@ class UserService {
    */
   async updateProfile(request: UpdateProfileRequest): Promise<User> {
     try {
+      let updatedRequest = { ...request };
+      
       if (request.avatar) {
         // Upload avatar separately
         const avatarUrl = await this.uploadAvatar(request.avatar);
-        request = { ...request, avatar: undefined };
+        updatedRequest = { ...request, avatar: undefined };
         // Add avatar URL to request
-        (request as any).avatarUrl = avatarUrl;
+        (updatedRequest as any).avatarUrl = avatarUrl;
       }
 
-      return await apiUtils.put<User>(`${this.baseUrl}/me`, request);
+      return await apiUtils.put<User>(`${this.baseUrl}/me`, updatedRequest);
     } catch (error) {
       console.error('Failed to update profile:', error);
       throw error;
@@ -393,7 +416,11 @@ class UserService {
     backupCodes: string[];
   }> {
     try {
-      return await apiUtils.post(`${this.baseUrl}/me/security/2fa/enable`);
+      return await apiUtils.post<{
+        qrCode: string;
+        secret: string;
+        backupCodes: string[];
+      }>(`${this.baseUrl}/me/security/2fa/enable`);
     } catch (error) {
       console.error('Failed to enable 2FA:', error);
       throw error;
@@ -445,7 +472,6 @@ class UserService {
         password,
         reason,
       });
-      
       // Clear local storage
       authUtils.removeToken();
     } catch (error) {
@@ -493,4 +519,3 @@ class UserService {
 
 export const userService = new UserService();
 export default userService;
- 
