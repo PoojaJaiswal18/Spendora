@@ -5,12 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a96b0ffe-0eec-43ea-ba79-788004bd181b" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/common/Layout.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/dashboard/Dashboard.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/upload/Upload.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/App.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/jaiswal/SpendoraApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jaiswal/SpendoraApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/jaiswal/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jaiswal/config/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/public/favicon.ico" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/public/favicon.ico" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,7 +56,7 @@
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "settings.editor.selected.configurable": "reference.settings.ide.settings.web.browsers",
-    "ts.external.directory.path": "C:\\Program Files\\JetBrains\\IntelliJ IDEA 2024.3.2.2\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external",
+    "ts.external.directory.path": "C:\\Users\\Pooja Jaiswal\\Desktop\\Spendora\\frontend\\node_modules\\typescript\\lib",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -81,6 +79,7 @@
       <workItem from="1748530115275" duration="490000" />
       <workItem from="1748536305954" duration="506000" />
       <workItem from="1748542381445" duration="386000" />
+      <workItem from="1748618333205" duration="1724000" />
     </task>
     <servers />
   </component>
