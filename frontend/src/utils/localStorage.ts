@@ -15,7 +15,9 @@ export type StorageKey =
   | 'tempUploads'
   | 'analyticsTimeRange'
   | 'recentPages' 
-  |'lastDashboardVisit' ; 
+  |'lastDashboardVisit' 
+  | 'uploadHistory'      
+  | 'processedReceipts';; 
 
 export interface StorageOptions {
   encrypt?: boolean;

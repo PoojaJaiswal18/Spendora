@@ -6,7 +6,7 @@ import {
   Typography,
   Button,
   TextField,
-  Grid,
+  Grid, // Using new Grid (formerly Grid2)
   Chip,
   Avatar,
   LinearProgress,
@@ -56,6 +56,9 @@ interface ExtractedData {
   category: string;
 }
 
+// Define category type based on CATEGORIES constant
+type CategoryType = 'Food & Dining' | 'Transportation' | 'Shopping' | 'Entertainment' | 'Bills & Utilities' | 'Healthcare' | 'Travel' | 'Education' | 'Other';
+
 const Upload: React.FC = () => {
   const theme = useTheme();
   const [activeStep, setActiveStep] = useState(0);
@@ -66,12 +69,12 @@ const Upload: React.FC = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
-  const categoryOptions = CATEGORIES.map(cat => cat.name);
+  const categoryOptions: CategoryType[] = CATEGORIES.map(cat => cat.name as CategoryType);
 
   const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: any[]) => {
     // Handle rejected files
     if (rejectedFiles.length > 0) {
-      const errors = rejectedFiles.map(({ file, errors }) => 
+      const errors = rejectedFiles.map(({ file, errors }) =>
         `${file.name}: ${errors.map((e: any) => e.message).join(', ')}`
       );
       console.error('File upload errors:', errors);
@@ -87,26 +90,25 @@ const Upload: React.FC = () => {
       return true;
     });
 
-    const newFiles = validFiles.map(file => ({
+    const newFiles: UploadedFile[] = validFiles.map(file => ({
       file,
       preview: URL.createObjectURL(file),
       id: Math.random().toString(36).substr(2, 9),
     }));
 
     setUploadedFiles(prev => [...prev, ...newFiles]);
-    
+
     if (newFiles.length > 0) {
       setActiveStep(1);
-      
-      // Store upload history
-      const uploadHistory = localStorage.getItem('uploadHistory', []);
+      // Store upload history - FIXED: Use existing StorageKey
+      const uploadHistory = localStorage.getItem<any[]>('tempUploads', []) || [];
       const newUploads = newFiles.map(f => ({
         filename: f.file.name,
         size: f.file.size,
         type: f.file.type,
         uploadedAt: new Date().toISOString(),
       }));
-      localStorage.setItem('uploadHistory', [...newUploads, ...uploadHistory.slice(0, 19)]);
+      localStorage.setItem('tempUploads', [...newUploads, ...uploadHistory.slice(0, 19)]);
     }
   }, []);
 
@@ -140,7 +142,6 @@ const Upload: React.FC = () => {
     setTimeout(() => {
       clearInterval(progressInterval);
       setUploadProgress(100);
-      
       setExtractedData({
         merchant: 'Starbucks Coffee',
         amount: 15.50,
@@ -161,7 +162,7 @@ const Upload: React.FC = () => {
       .required('Merchant name is required')
       .minLength(2, 'Merchant name must be at least 2 characters')
       .validate();
-    
+
     if (!merchantValidation.isValid) {
       errors.merchant = merchantValidation.errors[0];
     }
@@ -171,13 +172,13 @@ const Upload: React.FC = () => {
       .required('Amount is required')
       .positive('Amount must be positive')
       .validate();
-    
+
     if (!amountValidation.isValid) {
       errors.amount = amountValidation.errors[0];
     }
 
-    // Validate category
-    if (!data.category || !categoryOptions.includes(data.category)) {
+    // Validate category - FIXED: Use proper type checking
+    if (!data.category || !categoryOptions.includes(data.category as CategoryType)) {
       errors.category = 'Please select a valid category';
     }
 
@@ -191,16 +192,15 @@ const Upload: React.FC = () => {
     }
 
     setActiveStep(4);
-    
-    // Store processed receipt
-    const processedReceipts = localStorage.getItem('processedReceipts', []);
+    // Store processed receipt - FIXED: Use existing StorageKey
+    const processedReceipts = localStorage.getItem<any[]>('offlineData', []) || [];
     const newReceipt = {
       id: Date.now(),
       ...extractedData,
       processedAt: new Date().toISOString(),
       files: uploadedFiles.map(f => f.file.name),
     };
-    localStorage.setItem('processedReceipts', [newReceipt, ...processedReceipts.slice(0, 49)]);
+    localStorage.setItem('offlineData', [newReceipt, ...processedReceipts.slice(0, 49)]);
   };
 
   const removeFile = (id: string) => {
@@ -271,128 +271,116 @@ const Upload: React.FC = () => {
       </Fade>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} md={4}>
-          <Grow in timeout={ANIMATION_DURATIONS.LONG}>
-            <Card className="hover-lift">
-              <CardContent sx={{ p: 3 }}>
-                <Stepper activeStep={activeStep} orientation="vertical">
-                  {steps.map((label, index) => (
-                    <Step key={label}>
-                      <StepLabel
-                        sx={{
-                          '& .MuiStepLabel-label': {
-                            fontWeight: 600,
-                            fontFamily: 'Inter, sans-serif',
-                            color: activeStep >= index ? COLORS.primary : theme.palette.text.secondary,
-                            transition: `color ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
-                          },
-                          '& .MuiStepIcon-root': {
-                            color: activeStep >= index ? COLORS.primary : theme.palette.text.disabled,
-                            transition: `color ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
-                          },
-                        }}
-                      >
-                        {label}
-                      </StepLabel>
-                      <StepContent>
-                        <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'Inter, sans-serif' }}>
-                          {stepDescriptions[index]}
-                        </Typography>
-                      </StepContent>
-                    </Step>
-                  ))}
-                </Stepper>
-              </CardContent>
-            </Card>
-          </Grow>
-        </Grid>
-
-        <Grid item xs={12} md={8}>
-          {activeStep === 0 && (
-            <Grow in timeout={700}>
-              <Card
-                className="hover-lift"
-                sx={{
-                  background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${COLORS.primary}05 100%)`,
-                  border: `2px dashed ${COLORS.primary}40`,
-                  transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
-                }}
-              >
-                <CardContent sx={{ p: 4 }}>
-                  <Box
-                    {...getRootProps()}
-                    sx={{
-                      textAlign: 'center',
-                      py: 6,
-                      cursor: 'pointer',
-                      borderRadius: 2,
-                      transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
-                      '&:hover': {
-                        background: `${COLORS.primary}10`,
-                        transform: 'scale(1.02)',
-                      },
-                    }}
-                  >
-                    <input {...getInputProps()} />
-                    <Avatar
+        {/* Stepper - FIXED: Updated Grid syntax for MUI v7 */}
+        <Grid size={{ xs: 12, md: 4 }}>
+          <Card sx={{ borderRadius: '20px', height: 'fit-content' }}>
+            <CardContent sx={{ p: 3 }}>
+              <Stepper activeStep={activeStep} orientation="vertical">
+                {steps.map((label, index) => (
+                  <Step key={label}>
+                    <StepLabel
                       sx={{
-                        width: 80,
-                        height: 80,
-                        mx: 'auto',
-                        mb: 3,
-                        background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.secondary})`,
-                        animation: isDragActive ? 'pulse 1s infinite' : 'float 3s ease-in-out infinite',
+                        '& .MuiStepLabel-label': {
+                          color: activeStep >= index ? COLORS.primary : theme.palette.text.secondary,
+                          transition: `color ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
+                        },
+                        '& .MuiStepIcon-root': {
+                          color: activeStep >= index ? COLORS.primary : theme.palette.text.disabled,
+                          transition: `color ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
+                        },
                       }}
                     >
-                      <CloudUpload sx={{ fontSize: 40 }} />
-                    </Avatar>
-                    
-                    <Typography variant="h5" fontWeight="bold" sx={{ mb: 2, fontFamily: 'Inter, sans-serif' }}>
-                      {isDragActive ? 'Drop files here' : 'Upload Receipt Images'}
-                    </Typography>
-                    
-                    <Typography variant="body1" color="text.secondary" sx={{ mb: 3, fontFamily: 'Inter, sans-serif' }}>
-                      Drag and drop your receipt images here, or click to browse
-                    </Typography>
-                    
-                    <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
-                      <Chip
-                        icon={<PhotoCamera />}
-                        label="JPEG, PNG, GIF"
-                        variant="outlined"
-                        sx={{ borderColor: COLORS.primary, fontFamily: 'Inter, sans-serif' }}
-                      />
-                      <Chip
-                        icon={<ReceiptIcon />}
-                        label="PDF"
-                        variant="outlined"
-                        sx={{ borderColor: COLORS.secondary, fontFamily: 'Inter, sans-serif' }}
-                      />
-                    </Box>
-                  </Box>
-
-                  {uploadedFiles.length > 0 && (
-                    <Box sx={{ mt: 4 }}>
-                      <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: 'Inter, sans-serif' }}>
-                        Uploaded Files ({uploadedFiles.length})
+                      {label}
+                    </StepLabel>
+                    <StepContent>
+                      <Typography variant="body2" color="text.secondary">
+                        {stepDescriptions[index]}
                       </Typography>
-                      <Grid container spacing={2}>
-                        {uploadedFiles.map((file) => (
-                          <Grid item xs={12} sm={6} md={4} key={file.id}>
-                            <Card
-                              sx={{
-                                position: 'relative',
-                                overflow: 'hidden',
-                                transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
-                                '&:hover': {
-                                  transform: 'translateY(-4px)',
-                                  boxShadow: `0 8px 25px ${COLORS.primary}30`,
-                                },
-                                '&:hover .delete-btn': {
-                                  opacity: 1,
-                                },
-                              }}
-                            >
+                    </StepContent>
+                  </Step>
+                ))}
+              </Stepper>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Main Content - FIXED: Updated Grid syntax for MUI v7 */}
+        <Grid size={{ xs: 12, md: 8 }}>
+          {activeStep === 0 && (
+            <Card sx={{ borderRadius: '20px' }}>
+              <CardContent sx={{ p: 4 }}>
+                <Box
+                  {...getRootProps()}
+                  sx={{
+                    border: `2px dashed ${isDragActive ? COLORS.primary : theme.palette.divider}`,
+                    borderRadius: '20px',
+                    p: 6,
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
+                    background: isDragActive ? `${COLORS.primary}05` : 'transparent',
+                    '&:hover': {
+                      borderColor: COLORS.primary,
+                      background: `${COLORS.primary}05`,
+                      transform: 'translateY(-2px)',
+                    },
+                  }}
+                >
+                  <input {...getInputProps()} />
+                  <Avatar
+                    sx={{
+                      width: 80,
+                      height: 80,
+                      mx: 'auto',
+                      mb: 3,
+                      background: `linear-gradient(135deg, ${COLORS.primary}, ${theme.palette.primary.dark})`,
+                    }}
+                  >
+                    <CloudUpload sx={{ fontSize: 40 }} />
+                  </Avatar>
+                  
+                  <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>
+                    {isDragActive ? 'Drop files here' : 'Upload Receipt Images'}
+                  </Typography>
+                  
+                  <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                    Drag and drop your receipt images here, or click to browse
+                  </Typography>
+
+                  <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
+                    <Chip
+                      label="JPEG, PNG, GIF"
+                      variant="outlined"
+                      sx={{ borderColor: COLORS.primary, fontFamily: 'Inter, sans-serif' }}
+                    />
+                    <Chip
+                      label="PDF"
+                      variant="outlined"
+                      sx={{ borderColor: COLORS.secondary, fontFamily: 'Inter, sans-serif' }}
+                    />
+                  </Box>
+                </Box>
+
+                {uploadedFiles.length > 0 && (
+                  <Box sx={{ mt: 4 }}>
+                    <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
+                      Uploaded Files ({uploadedFiles.length})
+                    </Typography>
+                    
+                    <Grid container spacing={2}>
+                      {uploadedFiles.map((file) => (
+                        <Grid size={{ xs: 12, sm: 6, md: 4 }} key={file.id}>
+                          <Card
+                            sx={{
+                              position: 'relative',
+                              borderRadius: '12px',
+                              overflow: 'hidden',
+                              '&:hover .delete-button': {
+                                opacity: 1,
+                              },
+                            }}
+                          >
+                            {file.file.type.startsWith('image/') ? (
                               <Box
                                 component="img"
                                 src={file.preview}
@@ -403,397 +391,325 @@ const Upload: React.FC = () => {
                                   objectFit: 'cover',
                                 }}
                               />
-                              <IconButton
-                                className="delete-btn"
-                                onClick={() => removeFile(file.id)}
+                            ) : (
+                              <Box
                                 sx={{
-                                  position: 'absolute',
-                                  top: 8,
-                                  right: 8,
-                                  background: 'rgba(0, 0, 0, 0.7)',
-                                  color: 'white',
-                                  opacity: 0,
-                                  transition: `opacity ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
-                                  '&:hover': {
-                                    background: 'rgba(0, 0, 0, 0.8)',
-                                    transform: 'scale(1.1)',
-                                  },
+                                  height: 120,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  background: `${COLORS.secondary}20`,
                                 }}
                               >
-                                <Delete />
-                              </IconButton>
-                              <CardContent sx={{ p: 1 }}>
-                                <Typography variant="body2" noWrap sx={{ fontFamily: 'Inter, sans-serif' }}>
-                                  {file.file.name}
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'Inter, sans-serif' }}>
-                                  {formatFileSize(file.file.size)}
-                                </Typography>
-                              </CardContent>
-                            </Card>
-                          </Grid>
-                        ))}
-                      </Grid>
-                      
-                      <Button
-                        fullWidth
-                        variant="contained"
-                        size="large"
-                        onClick={handleProcessReceipt}
-                        sx={{
-                          mt: 3,
-                          py: 1.5,
-                          background: `linear-gradient(135deg, ${COLORS.primary}, ${theme.palette.primary.dark})`,
-                          fontFamily: 'Inter, sans-serif',
-                          fontWeight: 600,
-                          transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
-                          '&:hover': {
-                            transform: 'translateY(-2px)',
-                            boxShadow: `0 8px 25px ${COLORS.primary}40`,
-                          },
-                        }}
-                        className="neon-button"
-                      >
-                        Process Receipts
-                      </Button>
-                    </Box>
-                  )}
-                </CardContent>
-              </Card>
-            </Grow>
+                                <ReceiptIcon sx={{ fontSize: 40, color: COLORS.secondary }} />
+                              </Box>
+                            )}
+                            
+                            <IconButton
+                              className="delete-button"
+                              onClick={() => removeFile(file.id)}
+                              sx={{
+                                position: 'absolute',
+                                top: 8,
+                                right: 8,
+                                background: 'rgba(0, 0, 0, 0.7)',
+                                color: 'white',
+                                opacity: 0,
+                                transition: `opacity ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
+                                '&:hover': {
+                                  background: 'rgba(0, 0, 0, 0.8)',
+                                  transform: 'scale(1.1)',
+                                },
+                              }}
+                            >
+                              <Delete />
+                            </IconButton>
+                            
+                            <CardContent sx={{ p: 2 }}>
+                              <Typography variant="body2" fontWeight="medium" noWrap>
+                                {file.file.name}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {formatFileSize(file.file.size)}
+                              </Typography>
+                            </CardContent>
+                          </Card>
+                        </Grid>
+                      ))}
+                    </Grid>
+
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      onClick={handleProcessReceipt}
+                      sx={{
+                        mt: 3,
+                        py: 1.5,
+                        background: `linear-gradient(135deg, ${COLORS.primary}, ${theme.palette.primary.dark})`,
+                        fontFamily: 'Inter, sans-serif',
+                      }}
+                    >
+                      Process Receipts
+                    </Button>
+                  </Box>
+                )}
+              </CardContent>
+            </Card>
           )}
 
           {activeStep === 2 && processing && (
-            <Grow in timeout={500}>
-              <Card className="hover-lift">
-                <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                  <Avatar
-                    sx={{
-                      width: 80,
-                      height: 80,
-                      mx: 'auto',
-                      mb: 3,
-                      background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.secondary})`,
-                      animation: 'pulse 2s infinite',
-                    }}
-                  >
-                    <ReceiptIcon sx={{ fontSize: 40 }} />
-                  </Avatar>
-                  
-                  <Typography variant="h5" fontWeight="bold" sx={{ mb: 2, fontFamily: 'Inter, sans-serif' }}>
-                    Processing Receipt...
-                  </Typography>
-                  
-                  <Typography variant="body1" color="text.secondary" sx={{ mb: 4, fontFamily: 'Inter, sans-serif' }}>
-                    Our AI is extracting data from your receipt
-                  </Typography>
-                  
-                  <LinearProgress
-                    variant="determinate"
-                    value={uploadProgress}
-                    sx={{
-                      height: 8,
-                      borderRadius: 4,
-                      backgroundColor: `${COLORS.primary}20`,
-                      '& .MuiLinearProgress-bar': {
-                        background: `linear-gradient(90deg, ${COLORS.primary}, ${COLORS.secondary})`,
-                        borderRadius: 4,
-                        transition: `all ${ANIMATION_DURATIONS.LONG}ms ease`,
-                      },
-                    }}
-                  />
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 2, fontFamily: 'Inter, sans-serif' }}>
-                    {Math.round(uploadProgress)}% complete
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grow>
+            <Card sx={{ borderRadius: '20px' }}>
+              <CardContent sx={{ p: 4, textAlign: 'center' }}>
+                <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>
+                  Processing Receipt...
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                  Our AI is extracting data from your receipt
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={uploadProgress}
+                  sx={{
+                    height: 8,
+                    borderRadius: 4,
+                    mb: 2,
+                  }}
+                />
+                <Typography variant="body2" color="text.secondary">
+                  {Math.round(uploadProgress)}% complete
+                </Typography>
+              </CardContent>
+            </Card>
           )}
 
           {activeStep === 3 && extractedData && (
-            <Grow in timeout={500}>
-              <Card className="hover-lift">
-                <CardContent sx={{ p: 4 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                    <Typography variant="h5" fontWeight="bold" sx={{ fontFamily: 'Inter, sans-serif' }}>
-                      Verify Extracted Data
-                    </Typography>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      <Button
-                        startIcon={editMode ? <Save /> : <Edit />}
-                        onClick={() => setEditMode(!editMode)}
-                        variant={editMode ? 'contained' : 'outlined'}
-                        sx={{ fontFamily: 'Inter, sans-serif' }}
-                      >
-                        {editMode ? 'Save' : 'Edit'}
-                      </Button>
-                      <IconButton
-                        onClick={handleProcessReceipt}
-                        sx={{
-                          color: COLORS.primary,
-                          '&:hover': { transform: 'rotate(180deg)' },
-                          transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
-                        }}
-                      >
-                        <Refresh />
-                      </IconButton>
-                    </Box>
-                  </Box>
+            <Card sx={{ borderRadius: '20px' }}>
+              <CardContent sx={{ p: 4 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                  <Typography variant="h5" fontWeight="bold">
+                    Verify Extracted Data
+                  </Typography>
+                  <Button
+                    startIcon={editMode ? <Save /> : <Edit />}
+                    onClick={() => setEditMode(!editMode)}
+                    variant={editMode ? 'contained' : 'outlined'}
+                    sx={{ fontFamily: 'Inter, sans-serif' }}
+                  >
+                    {editMode ? 'Save' : 'Edit'}
+                  </Button>
+                </Box>
 
-                  {Object.keys(validationErrors).length > 0 && (
-                    <Alert severity="error" sx={{ mb: 3, fontFamily: 'Inter, sans-serif' }}>
-                      Please fix the following errors before saving:
-                      <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
-                        {Object.values(validationErrors).map((error, index) => (
-                          <li key={index}>{error}</li>
-                        ))}
-                      </ul>
-                    </Alert>
-                  )}
+                {Object.keys(validationErrors).length > 0 && (
+                  <Alert severity="error" sx={{ mb: 3 }}>
+                    Please fix the following errors before saving:
+                    <ul>
+                      {Object.values(validationErrors).map((error, index) => (
+                        <li key={index}>{error}</li>
+                      ))}
+                    </ul>
+                  </Alert>
+                )}
 
-                  <Grid container spacing={3}>
-                    <Grid item xs={12} md={6}>
-                      <TextField
-                        fullWidth
-                        label="Merchant Name"
-                        value={extractedData.merchant}
-                        disabled={!editMode}
-                        error={!!validationErrors.merchant}
-                        helperText={validationErrors.merchant}
-                        onChange={(e) => handleDataChange('merchant', e.target.value)}
-                        InputProps={{
-                          startAdornment: <ReceiptIcon sx={{ mr: 1, color: theme.palette.text.secondary }} />,
-                        }}
-                        sx={{ mb: 2, '& .MuiInputBase-input': { fontFamily: 'Inter, sans-serif' } }}
-                      />
-                    </Grid>
-                    
-                    <Grid item xs={12} md={6}>
-                      <TextField
-                        fullWidth
-                        label="Amount"
-                        value={extractedData.amount}
-                        disabled={!editMode}
-                        type="number"
-                        error={!!validationErrors.amount}
-                        helperText={validationErrors.amount}
-                        onChange={(e) => handleDataChange('amount', parseFloat(e.target.value) || 0)}
-                        InputProps={{
-                          startAdornment: <AttachMoney sx={{ mr: 1, color: theme.palette.text.secondary }} />,
-                        }}
-                        sx={{ mb: 2, '& .MuiInputBase-input': { fontFamily: 'Inter, sans-serif' } }}
-                      />
-                    </Grid>
-                    
-                    <Grid item xs={12} md={6}>
-                      <DatePicker
-                        label="Date"
-                        value={extractedData.date}
-                        disabled={!editMode}
-                        onChange={(date) => handleDataChange('date', date || new Date())}
-                        slotProps={{
-                          textField: {
-                            fullWidth: true,
-                            InputProps: {
-                              startAdornment: <DateRange sx={{ mr: 1, color: theme.palette.text.secondary }} />,
-                            },
-                            sx: { '& .MuiInputBase-input': { fontFamily: 'Inter, sans-serif' } },
-                          },
-                        }}
-                      />
-                    </Grid>
-                    
-                    <Grid item xs={12} md={6}>
-                      <Autocomplete
-                        options={categoryOptions}
-                        value={extractedData.category}
-                        disabled={!editMode}
-                        onChange={(_, value) => handleDataChange('category', value || '')}
-                        renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            label="Category"
-                            error={!!validationErrors.category}
-                            helperText={validationErrors.category}
-                            InputProps={{
-                              ...params.InputProps,
-                              startAdornment: <Category sx={{ mr: 1, color: theme.palette.text.secondary }} />,
-                            }}
-                            sx={{ '& .MuiInputBase-input': { fontFamily: 'Inter, sans-serif' } }}
-                          />
-                        )}
-                      />
-                    </Grid>
-                    
-                    <Grid item xs={12}>
-                      <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: 'Inter, sans-serif' }}>
-                        Items
-                      </Typography>
-                      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                        {extractedData.items.map((item, index) => (
-                          <Chip
-                            key={index}
-                            label={item}
-                            variant="outlined"
-                            sx={{
-                              borderColor: COLORS.primary,
-                              color: COLORS.primary,
-                              fontFamily: 'Inter, sans-serif',
-                              '&:hover': {
-                                transform: 'scale(1.05)',
-                                boxShadow: `0 4px 12px ${COLORS.primary}30`,
-                              },
-                              transition: `all ${ANIMATION_DURATIONS.SHORT}ms ease`,
-                            }}
-                          />
-                        ))}
-                      </Box>
-                    </Grid>
+                <Grid container spacing={3}>
+                  {/* Merchant - FIXED: Updated Grid syntax for MUI v7 */}
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField
+                      label="Merchant"
+                      fullWidth
+                      disabled={!editMode}
+                      value={extractedData.merchant}
+                      onChange={(e) => handleDataChange('merchant', e.target.value)}
+                      error={!!validationErrors.merchant}
+                      helperText={validationErrors.merchant}
+                      InputProps={{
+                        startAdornment: <ReceiptIcon sx={{ mr: 1, color: 'text.secondary' }} />,
+                      }}
+                      sx={{ mb: 2, '& .MuiInputBase-input': { fontFamily: 'Inter, sans-serif' } }}
+                    />
                   </Grid>
 
-                  <Box sx={{ display: 'flex', gap: 2, mt: 4 }}>
-                    <Button
+                  {/* Amount - FIXED: Updated Grid syntax for MUI v7 */}
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField
+                      label="Amount"
+                      type="number"
                       fullWidth
-                      variant="contained"
-                      size="large"
-                      onClick={handleSaveReceipt}
-                      sx={{
-                        py: 1.5,
-                        background: `linear-gradient(135deg, ${COLORS.success}, ${theme.palette.success.dark})`,
-                        fontFamily: 'Inter, sans-serif',
-                        fontWeight: 600,
-                        transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
-                        '&:hover': {
-                          transform: 'translateY(-2px)',
-                          boxShadow: `0 8px 25px ${COLORS.success}40`,
+                      disabled={!editMode}
+                      value={extractedData.amount}
+                      onChange={(e) => handleDataChange('amount', parseFloat(e.target.value) || 0)}
+                      error={!!validationErrors.amount}
+                      helperText={validationErrors.amount}
+                      InputProps={{
+                        startAdornment: <AttachMoney sx={{ mr: 1, color: 'text.secondary' }} />,
+                      }}
+                      sx={{ mb: 2, '& .MuiInputBase-input': { fontFamily: 'Inter, sans-serif' } }}
+                    />
+                  </Grid>
+
+                  {/* Date - FIXED: Updated Grid syntax for MUI v7 */}
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <DatePicker
+                      label="Date"
+                      value={extractedData.date}
+                      disabled={!editMode}
+                      onChange={(date) => handleDataChange('date', date || new Date())}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          InputProps: {
+                            startAdornment: <DateRange sx={{ mr: 1, color: 'text.secondary' }} />,
+                          },
+                          sx: { '& .MuiInputBase-input': { fontFamily: 'Inter, sans-serif' } },
                         },
                       }}
-                    >
-                      Save Receipt
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      size="large"
-                      startIcon={<Cancel />}
-                      onClick={resetUpload}
-                      sx={{ 
-                        fontFamily: 'Inter, sans-serif',
-                        transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
-                        '&:hover': { transform: 'translateY(-2px)' }
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grow>
+                    />
+                  </Grid>
+
+                  {/* Category - FIXED: Updated Grid syntax for MUI v7 */}
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <Autocomplete
+                      options={categoryOptions}
+                      value={extractedData.category as CategoryType}
+                      disabled={!editMode}
+                      onChange={(_, value) => handleDataChange('category', value || '')}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Category"
+                          error={!!validationErrors.category}
+                          helperText={validationErrors.category}
+                          InputProps={{
+                            ...params.InputProps,
+                            startAdornment: <Category sx={{ mr: 1, color: 'text.secondary' }} />,
+                          }}
+                          sx={{ '& .MuiInputBase-input': { fontFamily: 'Inter, sans-serif' } }}
+                        />
+                      )}
+                    />
+                  </Grid>
+
+                  {/* Items - FIXED: Updated Grid syntax for MUI v7 */}
+                  <Grid size={{ xs: 12 }}>
+                    <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 2 }}>
+                      Items
+                    </Typography>
+                    {extractedData.items.map((item, index) => (
+                      <Chip
+                        key={index}
+                        label={item}
+                        sx={{ mr: 1, mb: 1, fontFamily: 'Inter, sans-serif' }}
+                      />
+                    ))}
+                  </Grid>
+                </Grid>
+
+                <Box sx={{ display: 'flex', gap: 2, mt: 4 }}>
+                  <Button
+                    variant="contained"
+                    onClick={handleSaveReceipt}
+                    disabled={Object.keys(validationErrors).length > 0}
+                    sx={{
+                      flex: 1,
+                      py: 1.5,
+                      fontFamily: 'Inter, sans-serif',
+                    }}
+                  >
+                    Save Receipt
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={resetUpload}
+                    sx={{
+                      fontFamily: 'Inter, sans-serif',
+                      transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
+                      '&:hover': { transform: 'translateY(-2px)' }
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
           )}
 
           {activeStep === 4 && (
-            <Grow in timeout={500}>
-              <Card
-                className="hover-lift"
-                sx={{
-                  background: `linear-gradient(135deg, ${COLORS.success}10, ${theme.palette.success.dark}05)`,
-                  border: `1px solid ${COLORS.success}30`,
-                }}
-              >
-                <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                  <Avatar
-                    sx={{
-                      width: 80,
-                      height: 80,
-                      mx: 'auto',
-                      mb: 3,
-                      background: `linear-gradient(135deg, ${COLORS.success}, ${theme.palette.success.dark})`,
-                      animation: 'pulse 2s infinite',
-                    }}
-                  >
-                    <CheckCircle sx={{ fontSize: 40 }} />
-                  </Avatar>
-                  
-                  <Typography variant="h4" fontWeight="bold" sx={{ mb: 2, color: COLORS.success, fontFamily: 'Inter, sans-serif' }}>
-                    Receipt Saved Successfully! 🎉
-                  </Typography>
-                  
-                  <Typography variant="body1" color="text.secondary" sx={{ mb: 4, fontFamily: 'Inter, sans-serif' }}>
-                    Your receipt has been processed and saved to your account
-                  </Typography>
+            <Card sx={{ borderRadius: '20px' }}>
+              <CardContent sx={{ p: 4, textAlign: 'center' }}>
+                <Avatar
+                  sx={{
+                    width: 80,
+                    height: 80,
+                    mx: 'auto',
+                    mb: 3,
+                    background: `linear-gradient(135deg, ${COLORS.success}, ${theme.palette.success.dark})`,
+                  }}
+                >
+                  <CheckCircle sx={{ fontSize: 40 }} />
+                </Avatar>
 
-                  {extractedData && (
-                    <Box sx={{ mb: 4, p: 3, borderRadius: 2, background: `${theme.palette.background.default}50` }}>
-                      <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: 'Inter, sans-serif' }}>
+                <Typography variant="h4" fontWeight="bold" sx={{ mb: 2 }}>
+                  Receipt Saved Successfully! 🎉
+                </Typography>
+                
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+                  Your receipt has been processed and saved to your account
+                </Typography>
+
+                {extractedData && (
+                  <Card sx={{ mb: 4, background: `${COLORS.success}05` }}>
+                    <CardContent>
+                      <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
                         Receipt Summary
                       </Typography>
+                      
                       <Grid container spacing={2}>
-                        <Grid item xs={6}>
-                          <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'Inter, sans-serif' }}>
-                            Merchant:
-                          </Typography>
-                          <Typography variant="body1" fontWeight="bold" sx={{ fontFamily: 'Inter, sans-serif' }}>
-                            {extractedData.merchant}
-                          </Typography>
+                        {/* Summary Items - FIXED: Updated Grid syntax for MUI v7 */}
+                        <Grid size={{ xs: 12 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                            <Typography variant="body2" fontWeight="medium">Merchant:</Typography>
+                            <Typography variant="body2">{extractedData.merchant}</Typography>
+                          </Box>
                         </Grid>
-                        <Grid item xs={6}>
-                          <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'Inter, sans-serif' }}>
-                            Amount:
-                          </Typography>
-                          <Typography variant="body1" fontWeight="bold" sx={{ fontFamily: 'Inter, sans-serif' }}>
-                            {formatCurrency(extractedData.amount)}
-                          </Typography>
+                        <Grid size={{ xs: 12 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                            <Typography variant="body2" fontWeight="medium">Amount:</Typography>
+                            <Typography variant="body2">{formatCurrency(extractedData.amount)}</Typography>
+                          </Box>
                         </Grid>
-                        <Grid item xs={6}>
-                          <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'Inter, sans-serif' }}>
-                            Date:
-                          </Typography>
-                          <Typography variant="body1" fontWeight="bold" sx={{ fontFamily: 'Inter, sans-serif' }}>
-                            {formatDate(extractedData.date, 'short')}
-                          </Typography>
+                        <Grid size={{ xs: 12 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                            <Typography variant="body2" fontWeight="medium">Date:</Typography>
+                            <Typography variant="body2">{formatDate(extractedData.date, 'short')}</Typography>
+                          </Box>
                         </Grid>
-                        <Grid item xs={6}>
-                          <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'Inter, sans-serif' }}>
-                            Category:
-                          </Typography>
-                          <Typography variant="body1" fontWeight="bold" sx={{ fontFamily: 'Inter, sans-serif' }}>
-                            {extractedData.category}
-                          </Typography>
+                        <Grid size={{ xs: 12 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <Typography variant="body2" fontWeight="medium">Category:</Typography>
+                            <Typography variant="body2">{extractedData.category}</Typography>
+                          </Box>
                         </Grid>
                       </Grid>
-                    </Box>
-                  )}
-                  
-                  <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-                    <Button
-                      variant="contained"
-                      onClick={resetUpload}
-                      sx={{
-                        background: `linear-gradient(135deg, ${COLORS.primary}, ${theme.palette.primary.dark})`,
-                        fontFamily: 'Inter, sans-serif',
-                        fontWeight: 600,
-                        transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
-                        '&:hover': {
-                          transform: 'translateY(-2px)',
-                          boxShadow: `0 8px 25px ${COLORS.primary}40`,
-                        },
-                      }}
-                    >
-                      Upload Another
-                    </Button>
-                    <Button 
-                      variant="outlined"
-                      sx={{ 
-                        fontFamily: 'Inter, sans-serif',
-                        transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
-                        '&:hover': { transform: 'translateY(-2px)' }
-                      }}
-                    >
-                      View Dashboard
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grow>
+                    </CardContent>
+                  </Card>
+                )}
+
+                <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+                  <Button
+                    variant="contained"
+                    onClick={resetUpload}
+                    sx={{ fontFamily: 'Inter, sans-serif' }}
+                  >
+                    Upload Another
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    sx={{ fontFamily: 'Inter, sans-serif' }}
+                  >
+                    View Dashboard
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
           )}
         </Grid>
       </Grid>
