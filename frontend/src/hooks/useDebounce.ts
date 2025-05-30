@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 export const useDebounce = <T>(value: T, delay: number): T => {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+  const [debouncedValue, setDebouncedValue] = useState(value);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -20,14 +20,14 @@ export const useDebouncedCallback = <T extends (...args: any[]) => any>(
   callback: T,
   delay: number
 ): T => {
-  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  const [timeoutId, setTimeoutId] = useState<number | null>(null);
 
   const debouncedCallback = ((...args: Parameters<T>) => {
     if (timeoutId) {
       clearTimeout(timeoutId);
     }
 
-    const newTimeoutId = setTimeout(() => {
+    const newTimeoutId = window.setTimeout(() => {
       callback(...args);
     }, delay);
 

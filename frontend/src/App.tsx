@@ -10,6 +10,8 @@ import Analytics from './components/analytics/Analytics';
 import Challenges from './components/challenges/Challenges';
 import Layout from './components/common/Layout';
 import { AuthProvider } from './contexts/AuthContext';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 
 // Theme Context
@@ -236,6 +238,20 @@ function App() {
           </LocalizationProvider>
         </ThemeProvider>
       </ThemeContext.Provider>
+
+       <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+    </div>
   );
 }
 
