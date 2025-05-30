@@ -311,6 +311,45 @@ export interface AnimationKeyframes {
   spin: string;
 }
 
+
+export interface ComponentVariant {
+  backgroundColor: string;
+  color: string;
+  borderColor?: string;
+  borderWidth?: string;
+  borderStyle?: string;
+  borderRadius?: string;
+  fontSize?: string;
+  fontWeight?: number;
+  padding?: string;
+  margin?: string;
+  boxShadow?: string;
+  transition?: string;
+  hover?: Partial<ComponentVariant>;
+  focus?: Partial<ComponentVariant>;
+  active?: Partial<ComponentVariant>;
+  disabled?: Partial<ComponentVariant>;
+}
+
+export interface ComponentSize {
+  fontSize: string;
+  padding: string;
+  height?: string;
+  minHeight?: string;
+  borderRadius?: string;
+  iconSize?: string;
+}
+
+export interface ComponentState {
+  default: ComponentVariant;
+  hover: Partial<ComponentVariant>;
+  focus: Partial<ComponentVariant>;
+  active: Partial<ComponentVariant>;
+  disabled: Partial<ComponentVariant>;
+  loading?: Partial<ComponentVariant>;
+}
+
+
 export interface ComponentThemes {
   button: ButtonTheme;
   input: InputTheme;
@@ -333,4 +372,308 @@ export interface ButtonTheme {
 export interface ButtonVariants {
   primary: ComponentVariant;
   secondary: ComponentVariant;
+  tertiary: ComponentVariant;
+  ghost: ComponentVariant;
+  link: ComponentVariant;
+  destructive: ComponentVariant;
 }
+
+export interface ButtonSizes {
+  xs: ComponentSize;
+  sm: ComponentSize;
+  md: ComponentSize;
+  lg: ComponentSize;
+  xl: ComponentSize;
+}
+
+export interface ButtonStates {
+  default: ComponentState;
+  loading: ComponentState;
+  disabled: ComponentState;
+}
+
+export interface InputTheme {
+  variants: InputVariants;
+  sizes: InputSizes;
+  states: InputStates;
+}
+
+export interface InputVariants {
+  default: ComponentVariant;
+  filled: ComponentVariant;
+  outlined: ComponentVariant;
+  underlined: ComponentVariant;
+  ghost: ComponentVariant;
+}
+
+export interface InputSizes {
+  sm: ComponentSize;
+  md: ComponentSize;
+  lg: ComponentSize;
+}
+
+export interface InputStates {
+  default: ComponentState;
+  error: ComponentState;
+  success: ComponentState;
+  warning: ComponentState;
+  disabled: ComponentState;
+}
+
+export interface CardTheme {
+  variants: CardVariants;
+  sizes: CardSizes;
+  elevation: CardElevation;
+}
+
+export interface CardVariants {
+  default: ComponentVariant;
+  outlined: ComponentVariant;
+  filled: ComponentVariant;
+  elevated: ComponentVariant;
+}
+
+export interface CardSizes {
+  sm: ComponentSize;
+  md: ComponentSize;
+  lg: ComponentSize;
+}
+
+export interface CardElevation {
+  none: string;
+  sm: string;
+  md: string;
+  lg: string;
+  xl: string;
+}
+
+export interface ModalTheme {
+  overlay: ComponentVariant;
+  content: ComponentVariant;
+  header: ComponentVariant;
+  body: ComponentVariant;
+  footer: ComponentVariant;
+  closeButton: ComponentVariant;
+  sizes: ModalSizes;
+}
+
+export interface ModalSizes {
+  xs: ComponentSize;
+  sm: ComponentSize;
+  md: ComponentSize;
+  lg: ComponentSize;
+  xl: ComponentSize;
+  full: ComponentSize;
+}
+
+export interface TooltipTheme {
+  variants: TooltipVariants;
+  sizes: TooltipSizes;
+  placement: TooltipPlacement;
+}
+
+export interface TooltipVariants {
+  default: ComponentVariant;
+  dark: ComponentVariant;
+  light: ComponentVariant;
+  error: ComponentVariant;
+  warning: ComponentVariant;
+  success: ComponentVariant;
+  info: ComponentVariant;
+}
+
+export interface TooltipSizes {
+  sm: ComponentSize;
+  md: ComponentSize;
+  lg: ComponentSize;
+}
+
+export interface TooltipPlacement {
+  arrow: {
+    size: string;
+    offset: string;
+  };
+  offset: string;
+  maxWidth: string;
+}
+
+export interface DropdownTheme {
+  trigger: ComponentVariant;
+  content: ComponentVariant;
+  item: ComponentVariant;
+  separator: ComponentVariant;
+  sizes: DropdownSizes;
+}
+
+export interface DropdownSizes {
+  sm: ComponentSize;
+  md: ComponentSize;
+  lg: ComponentSize;
+}
+
+export interface NavigationTheme {
+  navbar: ComponentVariant;
+  sidebar: ComponentVariant;
+  menuItem: ComponentVariant;
+  submenu: ComponentVariant;
+  breadcrumb: ComponentVariant;
+  pagination: ComponentVariant;
+}
+
+export interface TableTheme {
+  container: ComponentVariant;
+  header: ComponentVariant;
+  row: ComponentVariant;
+  cell: ComponentVariant;
+  footer: ComponentVariant;
+  sizes: TableSizes;
+  striped: boolean;
+  hoverable: boolean;
+}
+
+export interface TableSizes {
+  sm: ComponentSize;
+  md: ComponentSize;
+  lg: ComponentSize;
+}
+
+export interface FormTheme {
+  fieldset: ComponentVariant;
+  legend: ComponentVariant;
+  label: ComponentVariant;
+  helpText: ComponentVariant;
+  errorText: ComponentVariant;
+  requiredIndicator: ComponentVariant;
+}
+
+export interface ChartTheme {
+  colors: ChartColors;
+  grid: ChartGrid;
+  axis: ChartAxis;
+  legend: ChartLegend;
+  tooltip: ChartTooltip;
+}
+
+export interface ChartColors {
+  primary: string[];
+  secondary: string[];
+  categorical: string[];
+  sequential: string[];
+  diverging: string[];
+}
+
+export interface ChartGrid {
+  color: string;
+  strokeWidth: number;
+  strokeDasharray?: string;
+}
+
+export interface ChartAxis {
+  color: string;
+  fontSize: string;
+  fontWeight: number;
+  tickColor: string;
+  tickSize: number;
+}
+
+export interface ChartLegend {
+  fontSize: string;
+  fontWeight: number;
+  color: string;
+  spacing: string;
+  symbolSize: number;
+}
+
+export interface ChartTooltip {
+  backgroundColor: string;
+  color: string;
+  fontSize: string;
+  padding: string;
+  borderRadius: string;
+  boxShadow: string;
+  maxWidth: string;
+}
+
+
+export type ThemeVariant = 'light' | 'dark';
+
+export type ResponsiveValue<T> = T | {
+  xs?: T;
+  sm?: T;
+  md?: T;
+  lg?: T;
+  xl?: T;
+  '2xl'?: T;
+};
+
+export interface ThemeCustomization {
+  colors?: Partial<ThemeColors>;
+  typography?: Partial<ThemeTypography>;
+  spacing?: Partial<ThemeSpacing>;
+  breakpoints?: Partial<ThemeBreakpoints>;
+  shadows?: Partial<ThemeShadows>;
+  animations?: Partial<ThemeAnimations>;
+  components?: Partial<ComponentThemes>;
+}
+
+export interface ThemeContextValue {
+  theme: ThemeConfig;
+  mode: ThemeMode;
+  setMode: (mode: ThemeMode) => void;
+  toggleMode: () => void;
+  customizeTheme: (customization: ThemeCustomization) => void;
+  resetTheme: () => void;
+}
+
+
+export interface StyleObject {
+  [key: string]: string | number | StyleObject | undefined;
+}
+
+export interface ThemeProviderProps {
+  children: React.ReactNode;
+  theme?: Partial<ThemeConfig>;
+  defaultMode?: ThemeMode;
+  storageKey?: string;
+}
+
+export interface UseThemeReturn {
+  theme: ThemeConfig;
+  mode: ThemeMode;
+  setMode: (mode: ThemeMode) => void;
+  toggleMode: () => void;
+  isDark: boolean;
+  isLight: boolean;
+  isAuto: boolean;
+}
+
+export interface UseResponsiveReturn<T> {
+  value: T;
+  breakpoint: keyof ThemeBreakpoints;
+  isMobile: boolean;
+  isTablet: boolean;
+  isDesktop: boolean;
+}
+
+
+export type ColorToken = keyof ThemeColors | `${keyof ThemeColors}.${keyof ColorPalette}`;
+export type SpacingToken = keyof ThemeSpacing;
+export type FontSizeToken = keyof FontSize;
+export type FontWeightToken = keyof FontWeight;
+export type ShadowToken = keyof ThemeShadows;
+export type BreakpointToken = keyof ThemeBreakpoints;
+export type AnimationToken = keyof AnimationDuration | keyof AnimationEasing | keyof AnimationKeyframes;
+
+
+export interface ThemedComponentProps {
+  variant?: string;
+  size?: string;
+  colorScheme?: string;
+  isDisabled?: boolean;
+  isLoading?: boolean;
+  className?: string;
+  style?: React.CSSProperties;
+}
+
+
+export interface DefaultTheme extends ThemeConfig {}
