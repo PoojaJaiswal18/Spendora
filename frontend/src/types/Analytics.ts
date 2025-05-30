@@ -1,3 +1,9 @@
+// Import DateRange from Common types or define it locally
+export interface DateRange {
+  start: Date | string;
+  end: Date | string;
+}
+
 export interface AnalyticsData {
   overview: AnalyticsOverview;
   trends: SpendingTrend[];
