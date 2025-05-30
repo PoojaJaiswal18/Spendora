@@ -17,7 +17,9 @@ export type StorageKey =
   | 'recentPages' 
   |'lastDashboardVisit' 
   | 'uploadHistory'      
-  | 'processedReceipts';; 
+  | 'processedReceipts'
+  | 'reportHistory'    
+  | 'exportHistory';; 
 
 export interface StorageOptions {
   encrypt?: boolean;
@@ -281,26 +283,29 @@ class LocalStorageManager {
   }
 
   private isValidStorageKey(key: string): key is StorageKey {
-    const validKeys: StorageKey[] = [
-      'authToken',
-      'refreshToken',
-      'userPreferences',
-      'recentSearches',
-      'dashboardLayout',
-      'themeMode',
-      'language',
-      'currency',
-      'dateFormat',
-      'notifications',
-      'onboardingCompleted',
-      'lastSyncTime',
-      'offlineData',
-      'tempUploads',
-      'analyticsTimeRange'
-    ];
-    return validKeys.includes(key as StorageKey);
-  }
-
+  const validKeys: StorageKey[] = [
+    'authToken',
+    'refreshToken',
+    'userPreferences',
+    'recentSearches',
+    'dashboardLayout',
+    'themeMode',
+    'language',
+    'currency',
+    'dateFormat',
+    'notifications',
+    'onboardingCompleted',
+    'lastSyncTime',
+    'offlineData',
+    'tempUploads',
+    'analyticsTimeRange',
+    'recentPages',
+    'lastDashboardVisit',
+    'reportHistory',
+    'exportHistory'
+  ];
+  return validKeys.includes(key as StorageKey);
+}
   private encrypt(data: string): string {
   
     try {

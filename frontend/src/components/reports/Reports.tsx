@@ -5,7 +5,7 @@ import {
   CardContent,
   Typography,
   Button,
-  Grid,
+  Grid, // Using new Grid (formerly Grid2)
   TextField,
   MenuItem,
   Chip,
@@ -49,8 +49,8 @@ const Reports: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const reportTypes = [
-    { value: 'monthly', label: 'Monthly Report', icon: <DateRange /> },
-    { value: 'yearly', label: 'Yearly Report', icon: <Assessment /> },
+    { value: 'monthly', label: 'Monthly Report', icon: <Assessment /> },
+    { value: 'yearly', label: 'Yearly Report', icon: <TrendingUp /> },
     { value: 'category', label: 'Category Report', icon: <Category /> },
     { value: 'tax', label: 'Tax Report', icon: <Receipt /> },
   ];
@@ -108,7 +108,7 @@ const Reports: React.FC = () => {
           padding: 20,
           font: {
             family: 'Inter, sans-serif',
-            weight: '500',
+            weight: 500 as const, // FIXED: Use proper type
           },
         },
       },
@@ -121,23 +121,24 @@ const Reports: React.FC = () => {
         cornerRadius: 12,
         titleFont: {
           family: 'Inter, sans-serif',
-          weight: '600',
+          weight: 600 as const, // FIXED: Use proper type
         },
         bodyFont: {
           family: 'Inter, sans-serif',
+          weight: 'normal' as const, // FIXED: Use proper type
         },
       },
     },
     scales: {
       x: {
-        ticks: { 
+        ticks: {
           color: theme.palette.text.secondary,
           font: { family: 'Inter, sans-serif' }
         },
         grid: { color: theme.palette.divider },
       },
       y: {
-        ticks: { 
+        ticks: {
           color: theme.palette.text.secondary,
           font: { family: 'Inter, sans-serif' }
         },
@@ -148,9 +149,8 @@ const Reports: React.FC = () => {
 
   const handleGenerateReport = async () => {
     setIsGenerating(true);
-    
-    // Store report generation in localStorage
-    const reportHistory = localStorage.getItem('reportHistory', []);
+    // Store report generation in localStorage - FIXED: Use existing StorageKey
+    const reportHistory = localStorage.getItem<any[]>('reportHistory', []) || [];
     const newReport = {
       id: Date.now(),
       type: reportType,
@@ -159,7 +159,7 @@ const Reports: React.FC = () => {
       generatedAt: new Date().toISOString(),
     };
     localStorage.setItem('reportHistory', [newReport, ...reportHistory.slice(0, 9)]);
-    
+
     // Simulate report generation
     setTimeout(() => {
       setIsGenerating(false);
@@ -171,8 +171,8 @@ const Reports: React.FC = () => {
     const filename = `report-${reportType}-${formatDate(new Date(), 'short')}.${format}`;
     console.log(`Downloading ${filename}`);
     
-    // Store export action
-    const exportHistory = localStorage.getItem('exportHistory', []);
+    // Store export action - FIXED: Use existing StorageKey with proper null safety
+    const exportHistory = localStorage.getItem<any[]>('exportHistory', []) || [];
     localStorage.setItem('exportHistory', [
       { format, filename, timestamp: new Date().toISOString() },
       ...exportHistory.slice(0, 19)
@@ -200,139 +200,128 @@ const Reports: React.FC = () => {
         </Box>
       </Fade>
 
-      {/* Report Configuration */}
+      {/* Report Configuration - FIXED: Updated Grid syntax for MUI v7 */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={8}>
-          <Grow in timeout={ANIMATION_DURATIONS.LONG}>
-            <Card className="hover-lift">
-              <CardContent sx={{ p: 3 }}>
-                <Typography variant="h6" fontWeight="bold" sx={{ mb: 3 }}>
-                  Report Configuration
-                </Typography>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Card sx={{ borderRadius: '20px' }}>
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="h6" fontWeight="bold" sx={{ mb: 3 }}>
+                Report Configuration
+              </Typography>
 
-                <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      fullWidth
-                      select
-                      label="Report Type"
-                      value={reportType}
-                      onChange={(e) => setReportType(e.target.value)}
-                      sx={{ mb: 2 }}
-                    >
-                      {reportTypes.map((type) => (
-                        <MenuItem key={type.value} value={type.value}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            {type.icon}
-                            {type.label}
-                          </Box>
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  </Grid>
+              <TextField
+                select
+                label="Report Type"
+                value={reportType}
+                onChange={(e) => setReportType(e.target.value)}
+                fullWidth
+                sx={{ mb: 2 }}
+              >
+                {reportTypes.map((type) => (
+                  <MenuItem key={type.value} value={type.value}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      {type.icon}
+                      {type.label}
+                    </Box>
+                  </MenuItem>
+                ))}
+              </TextField>
 
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      fullWidth
-                      select
-                      label="Category Filter"
-                      value={selectedCategory}
-                      onChange={(e) => setSelectedCategory(e.target.value)}
-                      sx={{ mb: 2 }}
-                    >
-                      {categories.map((category) => (
-                        <MenuItem key={category} value={category.toLowerCase().replace(/[^a-z0-9]/g, '-')}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            {category !== 'All Categories' && (
-                              <span>{CATEGORIES.find(cat => cat.name === category)?.icon}</span>
-                            )}
-                            {category}
-                          </Box>
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  </Grid>
+              <TextField
+                select
+                label="Category"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                fullWidth
+                sx={{ mb: 2 }}
+              >
+                {categories.map((category) => (
+                  <MenuItem key={category} value={category}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      {category !== 'All Categories' && (
+                        <Typography sx={{ fontSize: '1.2rem' }}>
+                          {CATEGORIES.find(cat => cat.name === category)?.icon}
+                        </Typography>
+                      )}
+                      {category}
+                    </Box>
+                  </MenuItem>
+                ))}
+              </TextField>
 
-                  <Grid item xs={12} md={6}>
-                    <DatePicker
-                      label="Start Date"
-                      value={dateRange.start}
-                      onChange={(date) => setDateRange(prev => ({ ...prev, start: date || new Date() }))}
-                      slotProps={{ textField: { fullWidth: true } }}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <DatePicker
-                      label="End Date"
-                      value={dateRange.end}
-                      onChange={(date) => setDateRange(prev => ({ ...prev, end: date || new Date() }))}
-                      slotProps={{ textField: { fullWidth: true } }}
-                    />
-                  </Grid>
+              <Grid container spacing={2} sx={{ mb: 3 }}>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <DatePicker
+                    label="Start Date"
+                    value={dateRange.start}
+                    onChange={(date) => setDateRange(prev => ({ ...prev, start: date || new Date() }))}
+                    slotProps={{ textField: { fullWidth: true } }}
+                  />
                 </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <DatePicker
+                    label="End Date"
+                    value={dateRange.end}
+                    onChange={(date) => setDateRange(prev => ({ ...prev, end: date || new Date() }))}
+                    slotProps={{ textField: { fullWidth: true } }}
+                  />
+                </Grid>
+              </Grid>
 
-                <Box sx={{ display: 'flex', gap: 2, mt: 3 }}>
-                  <Button
-                    variant="contained"
-                    startIcon={<Assessment />}
-                    onClick={handleGenerateReport}
-                    disabled={isGenerating}
-                    sx={{
-                      background: `linear-gradient(135deg, ${COLORS.primary}, ${theme.palette.primary.dark})`,
-                      transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
-                      '&:hover': {
-                        transform: 'translateY(-2px)',
-                        boxShadow: `0 8px 25px ${COLORS.primary}40`,
-                      },
-                      '&:disabled': {
-                        background: theme.palette.action.disabled,
-                      },
-                    }}
-                    className="neon-button"
-                  >
-                    {isGenerating ? 'Generating...' : 'Generate Report'}
-                  </Button>
-                  <Button 
-                    variant="outlined" 
-                    startIcon={<FilterList />}
-                    sx={{
-                      transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
-                      '&:hover': { transform: 'translateY(-2px)' }
-                    }}
-                  >
-                    Advanced Filters
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grow>
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={handleGenerateReport}
+                disabled={isGenerating}
+                sx={{
+                  background: `linear-gradient(135deg, ${COLORS.primary}, ${theme.palette.primary.dark})`,
+                  transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: `0 8px 25px ${COLORS.primary}40`,
+                  },
+                  '&:disabled': {
+                    background: theme.palette.action.disabled,
+                  },
+                }}
+                className="neon-button"
+              >
+                {isGenerating ? 'Generating...' : 'Generate Report'}
+              </Button>
+
+              <Button
+                variant="outlined"
+                fullWidth
+                sx={{
+                  mt: 2,
+                  transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
+                  '&:hover': { transform: 'translateY(-2px)' }
+                }}
+              >
+                Advanced Filters
+              </Button>
+            </CardContent>
+          </Card>
         </Grid>
 
-        <Grid item xs={12} md={4}>
-          <Grow in timeout={700}>
-            <Card
-              className="hover-lift"
-              sx={{
-                background: `linear-gradient(135deg, ${COLORS.secondary}10, ${theme.palette.secondary.dark}05)`,
-                border: `1px solid ${COLORS.secondary}20`,
-              }}
-            >
-              <CardContent sx={{ p: 3 }}>
-                <Typography variant="h6" fontWeight="bold" sx={{ mb: 3 }}>
-                  Export Options
-                </Typography>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Card sx={{ borderRadius: '20px' }}>
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="h6" fontWeight="bold" sx={{ mb: 3 }}>
+                Export Options
+              </Typography>
 
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <Button
-                    fullWidth
                     variant="outlined"
+                    fullWidth
                     startIcon={<PictureAsPdf />}
                     onClick={() => handleExport('pdf')}
-                    sx={{ 
+                    sx={{
                       py: 1.5,
                       transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
-                      '&:hover': { 
+                      '&:hover': {
                         transform: 'translateY(-2px)',
                         borderColor: COLORS.error,
                         color: COLORS.error,
@@ -341,15 +330,17 @@ const Reports: React.FC = () => {
                   >
                     Export as PDF
                   </Button>
+                </Grid>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <Button
-                    fullWidth
                     variant="outlined"
+                    fullWidth
                     startIcon={<TableChart />}
                     onClick={() => handleExport('excel')}
-                    sx={{ 
+                    sx={{
                       py: 1.5,
                       transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
-                      '&:hover': { 
+                      '&:hover': {
                         transform: 'translateY(-2px)',
                         borderColor: COLORS.success,
                         color: COLORS.success,
@@ -358,15 +349,17 @@ const Reports: React.FC = () => {
                   >
                     Export as Excel
                   </Button>
+                </Grid>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <Button
-                    fullWidth
                     variant="outlined"
+                    fullWidth
                     startIcon={<FileDownload />}
                     onClick={() => handleExport('csv')}
-                    sx={{ 
+                    sx={{
                       py: 1.5,
                       transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
-                      '&:hover': { 
+                      '&:hover': {
                         transform: 'translateY(-2px)',
                         borderColor: COLORS.info,
                         color: COLORS.info,
@@ -375,166 +368,101 @@ const Reports: React.FC = () => {
                   >
                     Download CSV
                   </Button>
-                </Box>
+                </Grid>
+              </Grid>
 
-                <Box sx={{ mt: 3, p: 2, borderRadius: 2, background: `${theme.palette.background.default}50` }}>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                    Report Summary
-                  </Typography>
-                  <Typography variant="h6" fontWeight="bold">
-                    Total Expenses: {formatCurrency(totalExpenses)}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {transactionCount} transactions • {categories.length - 1} categories
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                    Estimated file size: {formatFileSize(245760)} {/* ~240KB */}
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grow>
+              <Box sx={{ mt: 3, p: 2, background: `${COLORS.primary}05`, borderRadius: 2 }}>
+                <Typography variant="h6" fontWeight="bold" sx={{ mb: 1 }}>
+                  Report Summary
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Total Expenses: {formatCurrency(totalExpenses)}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {transactionCount} transactions • {categories.length - 1} categories
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Estimated file size: {formatFileSize(245760)} {/* ~240KB */}
+                </Typography>
+              </Box>
+            </CardContent>
+          </Card>
         </Grid>
       </Grid>
 
-      {/* Charts Section */}
+      {/* Charts Section - FIXED: Updated Grid syntax for MUI v7 */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} lg={6}>
-          <Grow in timeout={900}>
-            <Card className="hover-lift">
-              <CardContent sx={{ p: 3 }}>
-                <Typography variant="h6" fontWeight="bold" sx={{ mb: 3 }}>
-                  Category Breakdown
-                </Typography>
-                <Box sx={{ height: 300 }}>
-                  <Pie data={chartData} options={chartOptions} />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grow>
+        <Grid size={{ xs: 12, lg: 6 }}>
+          <Card sx={{ borderRadius: '20px' }}>
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="h6" fontWeight="bold" sx={{ mb: 3 }}>
+                Category Breakdown
+              </Typography>
+              <Box sx={{ height: 300 }}>
+                <Pie data={chartData} options={chartOptions} />
+              </Box>
+            </CardContent>
+          </Card>
         </Grid>
 
-        <Grid item xs={12} lg={6}>
-          <Grow in timeout={1100}>
-            <Card className="hover-lift">
-              <CardContent sx={{ p: 3 }}>
-                <Typography variant="h6" fontWeight="bold" sx={{ mb: 3 }}>
-                  Monthly Trends
-                </Typography>
-                <Box sx={{ height: 300 }}>
-                  <Bar data={barChartData} options={chartOptions} />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grow>
+        <Grid size={{ xs: 12, lg: 6 }}>
+          <Card sx={{ borderRadius: '20px' }}>
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="h6" fontWeight="bold" sx={{ mb: 3 }}>
+                Monthly Trends
+              </Typography>
+              <Box sx={{ height: 300 }}>
+                <Bar data={barChartData} options={chartOptions} />
+              </Box>
+            </CardContent>
+          </Card>
         </Grid>
       </Grid>
 
       {/* Transactions Table */}
-      <Fade in timeout={1300}>
-        <Card className="hover-lift">
-          <CardContent sx={{ p: 3 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h6" fontWeight="bold">
-                Transaction Details
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <Tooltip title="Search">
-                  <IconButton
-                    sx={{
-                      transition: `all ${ANIMATION_DURATIONS.SHORT}ms ease`,
-                      '&:hover': { 
-                        transform: 'scale(1.1)',
-                        color: COLORS.primary,
-                      }
-                    }}
-                  >
-                    <Search />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Filter">
-                  <IconButton
-                    sx={{
-                      transition: `all ${ANIMATION_DURATIONS.SHORT}ms ease`,
-                      '&:hover': { 
-                        transform: 'scale(1.1)',
-                        color: COLORS.primary,
-                      }
-                    }}
-                  >
-                    <FilterList />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-            </Box>
-
-            <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
-              <Table>
-                <TableHead>
-                  <TableRow sx={{ background: `${COLORS.primary}10` }}>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: 'Inter, sans-serif' }}>Date</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: 'Inter, sans-serif' }}>Merchant</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: 'Inter, sans-serif' }}>Category</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: 'Inter, sans-serif' }} align="right">Amount</TableCell>
+      <Card sx={{ borderRadius: '20px' }}>
+        <CardContent sx={{ p: 3 }}>
+          <Typography variant="h6" fontWeight="bold" sx={{ mb: 3 }}>
+            Transaction Details
+          </Typography>
+          
+          <TableContainer component={Paper} sx={{ borderRadius: '12px' }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Date</TableCell>
+                  <TableCell>Merchant</TableCell>
+                  <TableCell>Category</TableCell>
+                  <TableCell align="right">Amount</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {mockData.map((row, index) => (
+                  <TableRow key={row.id}>
+                    <TableCell>{formatDate(row.date, 'short')}</TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Avatar sx={{ width: 32, height: 32 }}>
+                          {row.merchant[0]}
+                        </Avatar>
+                        {row.merchant}
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Chip label={row.category} size="small" />
+                    </TableCell>
+                    <TableCell align="right">
+                      <Typography variant="body2" fontWeight="bold">
+                        {formatCurrency(row.amount)}
+                      </Typography>
+                    </TableCell>
                   </TableRow>
-                </TableHead>
-                <TableBody>
-                  {mockData.map((row, index) => (
-                    <Fade in timeout={1400 + index * 100} key={row.id}>
-                      <TableRow
-                        sx={{
-                          transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
-                          cursor: 'pointer',
-                          '&:hover': {
-                            background: `${theme.palette.action.hover}`,
-                            transform: 'scale(1.01)',
-                          },
-                        }}
-                      >
-                        <TableCell sx={{ fontFamily: 'Inter, sans-serif' }}>
-                          {formatDate(row.date, 'short')}
-                        </TableCell>
-                        <TableCell>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                            <Avatar sx={{ 
-                              width: 32, 
-                              height: 32, 
-                              fontSize: '0.8rem',
-                              background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.secondary})`,
-                            }}>
-                              {row.merchant[0]}
-                            </Avatar>
-                            <Typography sx={{ fontFamily: 'Inter, sans-serif' }}>
-                              {row.merchant}
-                            </Typography>
-                          </Box>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={row.category}
-                            size="small"
-                            sx={{
-                              background: `${COLORS.primary}20`,
-                              color: COLORS.primary,
-                              fontFamily: 'Inter, sans-serif',
-                              fontWeight: 500,
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell align="right">
-                          <Typography variant="body1" fontWeight="bold" sx={{ fontFamily: 'Inter, sans-serif' }}>
-                            {formatCurrency(row.amount)}
-                          </Typography>
-                        </TableCell>
-                      </TableRow>
-                    </Fade>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </CardContent>
-        </Card>
-      </Fade>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </CardContent>
+      </Card>
     </Box>
   );
 };
