@@ -256,9 +256,7 @@ class LocalStorageManager {
     }
   }
 
-  /**
-   * Watch for changes in localStorage
-   */
+
   watch(key: StorageKey, callback: (newValue: any, oldValue: any) => void): () => void {
     let currentValue = this.getItem(key);
 
@@ -274,7 +272,6 @@ class LocalStorageManager {
     return () => clearInterval(interval);
   }
 
-  // Private helper methods
   private getKey(key: StorageKey): string {
     return `${this.prefix}${key}`;
   }
@@ -301,8 +298,7 @@ class LocalStorageManager {
   }
 
   private encrypt(data: string): string {
-    // Simple XOR encryption for demo purposes
-    // In production, use a proper encryption library
+  
     try {
       let encrypted = '';
       for (let i = 0; i < data.length; i++) {
@@ -332,8 +328,7 @@ class LocalStorageManager {
   }
 
   private compress(data: string): string {
-    // Simple compression using repeated character replacement
-    // In production, use a proper compression library like pako
+   
     try {
       return data
         .replace(/(.)\1{2,}/g, (match, char) => `${char}*${match.length}`)
@@ -367,10 +362,9 @@ class LocalStorageManager {
   }
 }
 
-// Create singleton instance
 export const localStorage = new LocalStorageManager();
 
-// Convenience functions for common operations
+
 export const setItem = <T>(key: StorageKey, value: T, options?: StorageOptions) => 
   localStorage.setItem(key, value, options);
 
@@ -383,7 +377,7 @@ export const removeItem = (key: StorageKey) =>
 export const clearStorage = () => 
   localStorage.clear();
 
-// Typed getters and setters for common items
+
 export const authHelpers = {
   setToken: (token: string) => setItem('authToken', token, { encrypt: true }),
   getToken: () => getItem<string>('authToken'),
@@ -424,5 +418,5 @@ export const cacheHelpers = {
   getRecentSearches: () => getItem<string[]>('recentSearches', []) || [],
 };
 
-// Export default for backward compatibility
+
 export default localStorage;

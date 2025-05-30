@@ -1,4 +1,30 @@
-import { format, parseISO, isValid, differenceInDays, differenceInHours, differenceInMinutes, addDays, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, isSameDay, isSameWeek, isSameMonth, isSameYear, isToday, isYesterday, isTomorrow, getWeek, getMonth, getYear } from 'date-fns';
+import { 
+  format, 
+  parseISO, 
+  isValid, 
+  differenceInDays, 
+  differenceInHours, 
+  differenceInMinutes, 
+  addDays, 
+  subDays, 
+  startOfWeek, 
+  endOfWeek, 
+  startOfMonth, 
+  endOfMonth, 
+  startOfYear, 
+  endOfYear, 
+  isSameDay, 
+  isSameWeek, 
+  isSameMonth, 
+  isSameYear, 
+  isToday, 
+  isYesterday, 
+  isTomorrow, 
+  getWeek, 
+  getMonth, 
+  getYear,
+  type Locale  // Import Locale type from date-fns
+} from 'date-fns';
 
 export type DateRange = {
   start: Date;
@@ -219,21 +245,30 @@ export const parseFlexibleDate = (input: string): Date | null => {
     let date = parseISO(input);
     if (isValid(date)) return date;
     
-    // Try common formats
-    const formats = [
-      'yyyy-MM-dd',
-      'MM/dd/yyyy',
-      'dd/MM/yyyy',
-      'MMM dd, yyyy',
-      'MMMM dd, yyyy',
+    // Try native Date constructor for common formats
+    date = new Date(input);
+    if (isValid(date)) return date;
+    
+    // Try manual parsing for specific formats
+    const datePatterns = [
+      /^(\d{4})-(\d{2})-(\d{2})$/, // YYYY-MM-DD
+      /^(\d{2})\/(\d{2})\/(\d{4})$/, // MM/DD/YYYY
+      /^(\d{2})\/(\d{2})\/(\d{4})$/, // DD/MM/YYYY
     ];
     
-    for (const formatStr of formats) {
-      try {
-        date = new Date(input);
-        if (isValid(date)) return date;
-      } catch {
-        continue;
+    for (const pattern of datePatterns) {
+      const match = input.match(pattern);
+      if (match) {
+        const [, first, second, third] = match;
+        // Try different interpretations
+        const attempts = [
+          new Date(parseInt(third), parseInt(first) - 1, parseInt(second)),
+          new Date(parseInt(third), parseInt(second) - 1, parseInt(first)),
+        ];
+        
+        for (const attempt of attempts) {
+          if (isValid(attempt)) return attempt;
+        }
       }
     }
     
@@ -323,4 +358,127 @@ export const getAge = (birthDate: Date): number => {
     return 0;
   }
 };
- 
+
+/**
+ * Get week number of the year
+ */
+export const getWeekNumber = (date: Date): number => {
+  try {
+    return getWeek(date);
+  } catch (error) {
+    console.error('Week number calculation error:', error);
+    return 1;
+  }
+};
+
+/**
+ * Check if a year is a leap year
+ */
+export const isLeapYear = (year: number): boolean => {
+  try {
+    return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+  } catch (error) {
+    console.error('Leap year check error:', error);
+    return false;
+  }
+};
+
+/**
+ * Get days in a month
+ */
+export const getDaysInMonth = (date: Date): number => {
+  try {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    return new Date(year, month + 1, 0).getDate();
+  } catch (error) {
+    console.error('Days in month calculation error:', error);
+    return 30;
+  }
+};
+
+/**
+ * Get timezone offset in minutes
+ */
+export const getTimezoneOffset = (date: Date = new Date()): number => {
+  try {
+    return date.getTimezoneOffset();
+  } catch (error) {
+    console.error('Timezone offset calculation error:', error);
+    return 0;
+  }
+};
+
+/**
+ * Convert date to UTC
+ */
+export const toUTC = (date: Date): Date => {
+  try {
+    return new Date(date.getTime() + (date.getTimezoneOffset() * 60000));
+  } catch (error) {
+    console.error('UTC conversion error:', error);
+    return new Date();
+  }
+};
+
+/**
+ * Convert UTC date to local time
+ */
+export const fromUTC = (utcDate: Date): Date => {
+  try {
+    return new Date(utcDate.getTime() - (utcDate.getTimezoneOffset() * 60000));
+  } catch (error) {
+    console.error('Local time conversion error:', error);
+    return new Date();
+  }
+};
+
+/**
+ * Get start and end of day
+ */
+export const getStartOfDay = (date: Date): Date => {
+  try {
+    const result = new Date(date);
+    result.setHours(0, 0, 0, 0);
+    return result;
+  } catch (error) {
+    console.error('Start of day calculation error:', error);
+    return new Date();
+  }
+};
+
+export const getEndOfDay = (date: Date): Date => {
+  try {
+    const result = new Date(date);
+    result.setHours(23, 59, 59, 999);
+    return result;
+  } catch (error) {
+    console.error('End of day calculation error:', error);
+    return new Date();
+  }
+};
+
+/**
+ * Format date for API (ISO string)
+ */
+export const formatForAPI = (date: Date): string => {
+  try {
+    return date.toISOString();
+  } catch (error) {
+    console.error('API date formatting error:', error);
+    return new Date().toISOString();
+  }
+};
+
+/**
+ * Parse date from API (ISO string)
+ */
+export const parseFromAPI = (dateString: string): Date => {
+  try {
+    const date = parseISO(dateString);
+    return isValid(date) ? date : new Date();
+  } catch (error) {
+    console.error('API date parsing error:', error);
+    return new Date();
+  }
+};
