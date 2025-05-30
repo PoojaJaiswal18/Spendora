@@ -11,8 +11,8 @@ export const useLocalStorage = <T>(
 ) => {
   const [storedValue, setStoredValue] = useState<T>(() => {
     try {
-      const item = localStorageUtil.getItem(key);
-      return item !== undefined ? item : initialValue;
+      const item = localStorageUtil.getItem<T>(key);
+      return item !== undefined && item !== null ? item : initialValue;
     } catch (error) {
       console.error(`Error reading localStorage key "${key}":`, error);
       return initialValue;
