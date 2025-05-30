@@ -51,8 +51,42 @@ export interface BulkOperationResult {
   }>;
 }
 
+// Configuration constants - Replace process.env with hardcoded values or config
+const API_CONFIG = {
+  // Development configuration
+  DEV_API_URL: 'http://localhost:8080/api',
+  DEV_UPLOAD_URL: 'http://localhost:8080/api/upload',
+  
+  // Production configuration - update these for your production environment
+  PROD_API_URL: 'https://your-production-api.com/api',
+  PROD_UPLOAD_URL: 'https://your-production-api.com/api/upload',
+  
+  // Determine environment based on hostname or other indicators
+  get isDevelopment() {
+    return window.location.hostname === 'localhost' || 
+           window.location.hostname === '127.0.0.1' ||
+           window.location.hostname.includes('dev');
+  },
+  
+  get apiUrl() {
+    return this.isDevelopment ? this.DEV_API_URL : this.PROD_API_URL;
+  },
+  
+  get uploadUrl() {
+    return this.isDevelopment ? this.DEV_UPLOAD_URL : this.PROD_UPLOAD_URL;
+  }
+};
+
 class ReceiptService {
   private readonly baseUrl = '/receipts';
+  private readonly apiUrl: string;
+  private readonly uploadUrl: string;
+
+  constructor() {
+    // FIXED: Remove process.env references and use config object
+    this.apiUrl = API_CONFIG.apiUrl;
+    this.uploadUrl = API_CONFIG.uploadUrl;
+  }
 
   /**
    * Upload a new receipt with OCR processing
@@ -304,17 +338,17 @@ class ReceiptService {
   }
 
   /**
-   * Get receipt image URL
+   * Get receipt image URL - FIXED: Using class property instead of process.env directly
    */
   getReceiptImageUrl(id: string): string {
-    return `${process.env.REACT_APP_API_URL || 'http://localhost:8080/api'}${this.baseUrl}/${id}/image`;
+    return `${this.apiUrl}${this.baseUrl}/${id}/image`;
   }
 
   /**
-   * Get receipt thumbnail URL
+   * Get receipt thumbnail URL - FIXED: Using class property instead of process.env directly
    */
   getReceiptThumbnailUrl(id: string): string {
-    return `${process.env.REACT_APP_API_URL || 'http://localhost:8080/api'}${this.baseUrl}/${id}/thumbnail`;
+    return `${this.apiUrl}${this.baseUrl}/${id}/thumbnail`;
   }
 }
 
