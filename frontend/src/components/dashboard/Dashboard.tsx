@@ -66,64 +66,39 @@ interface StatCardProps {
 
 const StatCard: React.FC<StatCardProps> = ({ title, value, change, trend, icon, color, delay }) => {
   const theme = useTheme();
-  
+
   return (
-    <Grow in timeout={ANIMATION_DURATIONS.LONG + delay}>
+    <Grow in timeout={600 + delay}>
       <Card
-        className="interactive-card"
         sx={{
-          background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${color}10 100%)`,
+          background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${color}05 100%)`,
           border: `1px solid ${color}20`,
-          position: 'relative',
-          overflow: 'hidden',
-          transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms cubic-bezier(0.4, 0, 0.2, 1)`,
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '4px',
-            background: `linear-gradient(90deg, ${color}, ${color}80)`,
-          },
+          borderRadius: '20px',
+          transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
           '&:hover': {
-            transform: 'translateY(-4px) scale(1.02)',
-            boxShadow: `0 8px 30px ${color}30`,
+            transform: 'translateY(-8px) scale(1.02)',
+            boxShadow: `0 20px 40px ${color}20`,
           },
         }}
       >
         <CardContent sx={{ p: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-            <Avatar
-              sx={{
-                background: `linear-gradient(135deg, ${color}, ${color}80)`,
-                width: 56,
-                height: 56,
-                animation: 'float 3s ease-in-out infinite',
-              }}
-            >
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+            <Avatar sx={{ background: `linear-gradient(135deg, ${color}, ${color}80)`, width: 56, height: 56 }}>
               {icon}
             </Avatar>
-            <IconButton 
-              size="small" 
-              sx={{ 
-                color: theme.palette.text.secondary,
-                transition: `all ${ANIMATION_DURATIONS.SHORT}ms ease`,
-                '&:hover': { transform: 'rotate(90deg)' }
-              }}
-            >
+            <IconButton size="small">
               <MoreVert />
             </IconButton>
           </Box>
-
-          <Typography variant="h4" fontWeight="bold" sx={{ mb: 1, color: theme.palette.text.primary }}>
+          
+          <Typography variant="h4" fontWeight="bold" sx={{ mb: 1, fontFamily: 'Inter, sans-serif' }}>
             {value}
           </Typography>
-
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontFamily: 'Inter, sans-serif' }}>
             {title}
           </Typography>
-
+          
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {trend === 'up' ? (
               <ArrowUpward sx={{ color: COLORS.success, fontSize: 16 }} />
@@ -135,11 +110,12 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, change, trend, icon, 
               sx={{
                 color: trend === 'up' ? COLORS.success : COLORS.error,
                 fontWeight: 600,
+                fontFamily: 'Inter, sans-serif',
               }}
             >
               {change}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'Inter, sans-serif' }}>
               vs last month
             </Typography>
           </Box>
@@ -157,7 +133,7 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 1000);
     
-    // Store dashboard visit
+    // Store dashboard visit - Using existing StorageKey
     localStorage.setItem('lastDashboardVisit', new Date().toISOString());
     
     return () => clearTimeout(timer);
@@ -174,7 +150,7 @@ const Dashboard: React.FC = () => {
           padding: 20,
           font: {
             family: 'Inter, sans-serif',
-            weight: '500',
+            weight: 500 as const,
           },
         },
       },
@@ -187,27 +163,55 @@ const Dashboard: React.FC = () => {
         cornerRadius: 12,
         titleFont: {
           family: 'Inter, sans-serif',
-          weight: '600',
+          weight: 600 as const,
         },
         bodyFont: {
           family: 'Inter, sans-serif',
+          weight: 'normal' as const,
         },
       },
     },
     scales: {
       x: {
-        ticks: { 
+        ticks: {
           color: theme.palette.text.secondary,
           font: { family: 'Inter, sans-serif' }
         },
         grid: { color: theme.palette.divider },
       },
       y: {
-        ticks: { 
+        ticks: {
           color: theme.palette.text.secondary,
           font: { family: 'Inter, sans-serif' }
         },
         grid: { color: theme.palette.divider },
+      },
+    },
+  };
+
+  const doughnutOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom' as const,
+        labels: {
+          color: theme.palette.text.primary,
+          usePointStyle: true,
+          padding: 15,
+          font: {
+            family: 'Inter, sans-serif',
+            weight: 500 as const,
+          },
+        },
+      },
+      tooltip: {
+        backgroundColor: theme.palette.background.paper,
+        titleColor: theme.palette.text.primary,
+        bodyColor: theme.palette.text.secondary,
+        borderColor: theme.palette.divider,
+        borderWidth: 1,
+        cornerRadius: 12,
       },
     },
   };
@@ -266,10 +270,10 @@ const Dashboard: React.FC = () => {
       <Box sx={{ p: 3 }}>
         <Grid container spacing={3}>
           {[1, 2, 3, 4].map((item) => (
-            <Grid item xs={12} sm={6} lg={3} key={item}>
-              <Card sx={{ height: 200 }}>
-                <CardContent>
-                  <Box className="shimmer" sx={{ height: '100%', borderRadius: 1 }} />
+            <Grid size={{ xs: 12, sm: 6, lg: 3 }} key={item}>
+              <Card sx={{ height: 140, borderRadius: '20px' }}>
+                <CardContent sx={{ p: 3 }}>
+                  <LinearProgress />
                 </CardContent>
               </Card>
             </Grid>
@@ -298,47 +302,47 @@ const Dashboard: React.FC = () => {
         </Box>
       </Fade>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - Updated for MUI v7 Grid2 */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} lg={3}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <StatCard
-            title="Total Spent This Month"
-            value={formatCurrency(totalSpent)}
-            change="+12.5%"
+            title="Total Spent"
+            value={formatCurrency(2847)}
+            change="+12%"
             trend="up"
             icon={<AttachMoney />}
             color={COLORS.primary}
             delay={0}
           />
         </Grid>
-        <Grid item xs={12} sm={6} lg={3}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <StatCard
-            title="Total Receipts"
-            value="127"
-            change="+8.2%"
+            title="Transactions"
+            value="156"
+            change="+8%"
             trend="up"
             icon={<Receipt />}
             color={COLORS.secondary}
             delay={100}
           />
         </Grid>
-        <Grid item xs={12} sm={6} lg={3}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <StatCard
-            title="Categories Used"
-            value="12"
-            change="-2.1%"
-            trend="down"
+            title="Categories"
+            value="8"
+            change="+2%"
+            trend="up"
             icon={<Category />}
             color={COLORS.success}
             delay={200}
           />
         </Grid>
-        <Grid item xs={12} sm={6} lg={3}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <StatCard
-            title="Avg. Daily Spend"
+            title="Avg. Daily"
             value={formatCurrency(94.90)}
-            change="+5.7%"
-            trend="up"
+            change="-5%"
+            trend="down"
             icon={<DateRange />}
             color={COLORS.warning}
             delay={300}
@@ -346,26 +350,23 @@ const Dashboard: React.FC = () => {
         </Grid>
       </Grid>
 
-      {/* Charts Section */}
+      {/* Charts Section - Updated for MUI v7 Grid2 */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} lg={8}>
-          <Grow in timeout={800}>
-            <Card className="hover-lift">
+        <Grid size={{ xs: 12, lg: 8 }}>
+          <Grow in timeout={1000}>
+            <Card
+              sx={{
+                borderRadius: '20px',
+                transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
+                '&:hover': { transform: 'translateY(-2px)' }
+              }}
+            >
               <CardContent sx={{ p: 3 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                   <Typography variant="h6" fontWeight="bold">
                     Spending Trends
                   </Typography>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={<TrendingUp />}
-                    sx={{ 
-                      borderRadius: '20px',
-                      transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
-                      '&:hover': { transform: 'translateY(-2px)' }
-                    }}
-                  >
+                  <Button variant="outlined" size="small" sx={{ borderRadius: '20px' }}>
                     View Details
                   </Button>
                 </Box>
@@ -377,30 +378,15 @@ const Dashboard: React.FC = () => {
           </Grow>
         </Grid>
 
-        <Grid item xs={12} lg={4}>
-          <Grow in timeout={1000}>
-            <Card className="hover-lift">
+        <Grid size={{ xs: 12, lg: 4 }}>
+          <Grow in timeout={1200}>
+            <Card sx={{ borderRadius: '20px' }}>
               <CardContent sx={{ p: 3 }}>
                 <Typography variant="h6" fontWeight="bold" sx={{ mb: 3 }}>
                   Category Breakdown
                 </Typography>
                 <Box sx={{ height: 300 }}>
-                  <Doughnut 
-                    data={doughnutData} 
-                    options={{
-                      ...chartOptions,
-                      plugins: {
-                        ...chartOptions.plugins,
-                        legend: { 
-                          position: 'bottom',
-                          labels: {
-                            ...chartOptions.plugins.legend.labels,
-                            padding: 15,
-                          }
-                        }
-                      }
-                    }} 
-                  />
+                  <Doughnut data={doughnutData} options={doughnutOptions} />
                 </Box>
               </CardContent>
             </Card>
@@ -408,170 +394,128 @@ const Dashboard: React.FC = () => {
         </Grid>
       </Grid>
 
-      {/* Recent Transactions & Quick Actions */}
+      {/* Recent Transactions & Quick Actions - Updated for MUI v7 Grid2 */}
       <Grid container spacing={3}>
-        <Grid item xs={12} lg={8}>
-          <Fade in timeout={1200}>
-            <Card className="hover-lift">
-              <CardContent sx={{ p: 3 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                  <Typography variant="h6" fontWeight="bold">
-                    Recent Transactions
-                  </Typography>
-                  <Button 
-                    variant="text" 
-                    size="small"
+        <Grid size={{ xs: 12, lg: 8 }}>
+          <Card sx={{ borderRadius: '20px' }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Typography variant="h6" fontWeight="bold">
+                  Recent Transactions
+                </Typography>
+                <Button variant="text" size="small">
+                  View All
+                </Button>
+              </Box>
+              
+              {recentTransactions.map((transaction, index) => (
+                <Fade in timeout={800 + index * 100} key={transaction.id}>
+                  <Box
                     sx={{
-                      transition: `all ${ANIMATION_DURATIONS.SHORT}ms ease`,
-                      '&:hover': { transform: 'translateX(4px)' }
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      py: 2,
+                      borderBottom: index < recentTransactions.length - 1 ? `1px solid ${theme.palette.divider}` : 'none',
                     }}
                   >
-                    View All
-                  </Button>
-                </Box>
-
-                {recentTransactions.map((transaction, index) => (
-                  <Fade in timeout={1300 + index * 100} key={transaction.id}>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        p: 2,
-                        borderRadius: 2,
-                        mb: 1,
-                        transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
-                        cursor: 'pointer',
-                        '&:hover': {
-                          background: `${theme.palette.action.hover}`,
-                          transform: 'translateX(4px)',
-                          boxShadow: `0 4px 12px ${theme.palette.primary.main}20`,
-                        },
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Avatar sx={{ background: 'transparent', fontSize: '1.5rem' }}>
-                          {transaction.icon}
-                        </Avatar>
-                        <Box>
-                          <Typography variant="body1" fontWeight="600">
-                            {transaction.merchant}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {formatDate(transaction.date, 'short')}
-                          </Typography>
-                        </Box>
-                      </Box>
-                      <Box sx={{ textAlign: 'right' }}>
-                        <Typography variant="body1" fontWeight="bold">
-                          {formatCurrency(transaction.amount)}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Avatar sx={{ width: 40, height: 40 }}>
+                        {transaction.icon}
+                      </Avatar>
+                      <Box>
+                        <Typography variant="body1" fontWeight="medium">
+                          {transaction.merchant}
                         </Typography>
-                        <Chip
-                          label={transaction.category}
-                          size="small"
-                          sx={{
-                            background: `${COLORS.primary}20`,
-                            color: COLORS.primary,
-                            fontWeight: 500,
-                            fontSize: '0.75rem',
-                          }}
-                        />
+                        <Typography variant="body2" color="text.secondary">
+                          {formatDate(transaction.date, 'short')}
+                        </Typography>
                       </Box>
                     </Box>
-                  </Fade>
-                ))}
-              </CardContent>
-            </Card>
-          </Fade>
+                    <Typography variant="h6" fontWeight="bold">
+                      {formatCurrency(transaction.amount)}
+                    </Typography>
+                  </Box>
+                </Fade>
+              ))}
+            </CardContent>
+          </Card>
         </Grid>
 
-        <Grid item xs={12} lg={4}>
-          <Fade in timeout={1400}>
-            <Card
-              className="hover-lift"
-              sx={{
-                background: `linear-gradient(135deg, ${COLORS.primary}10, ${COLORS.secondary}05)`,
-                border: `1px solid ${COLORS.primary}20`,
-              }}
-            >
-              <CardContent sx={{ p: 3 }}>
-                <Typography variant="h6" fontWeight="bold" sx={{ mb: 3 }}>
-                  Quick Actions
-                </Typography>
+        <Grid size={{ xs: 12, lg: 4 }}>
+          <Card sx={{ borderRadius: '20px' }}>
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="h6" fontWeight="bold" sx={{ mb: 3 }}>
+                Quick Actions
+              </Typography>
+              
+              <Button
+                variant="contained"
+                fullWidth
+                startIcon={<Add />}
+                sx={{
+                  mb: 2,
+                  py: 1.5,
+                  background: `linear-gradient(135deg, ${COLORS.primary}, ${theme.palette.primary.dark})`,
+                  transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
+                  '&:hover': {
+                    background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${COLORS.primary})`,
+                    transform: 'translateY(-2px)',
+                    boxShadow: `0 8px 25px ${COLORS.primary}40`,
+                  },
+                }}
+                className="neon-button"
+              >
+                Upload Receipt
+              </Button>
+              
+              <Button
+                variant="outlined"
+                fullWidth
+                sx={{
+                  mb: 2,
+                  py: 1.5,
+                  transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
+                  '&:hover': { transform: 'translateY(-2px)' }
+                }}
+              >
+                Generate Report
+              </Button>
+              
+              <Button
+                variant="text"
+                fullWidth
+                sx={{
+                  py: 1.5,
+                  transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
+                  '&:hover': { transform: 'translateY(-2px)' }
+                }}
+              >
+                View Analytics
+              </Button>
 
-                <Button
-                  fullWidth
-                  variant="contained"
-                  startIcon={<Add />}
+              <Box sx={{ mt: 3 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  Monthly Budget Progress
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={(totalSpent / budgetLimit) * 100}
                   sx={{
-                    mb: 2,
-                    py: 1.5,
-                    background: `linear-gradient(135deg, ${COLORS.primary}, ${theme.palette.primary.dark})`,
-                    transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
-                    '&:hover': {
-                      background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${COLORS.primary})`,
-                      transform: 'translateY(-2px)',
-                      boxShadow: `0 8px 25px ${COLORS.primary}40`,
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor: `${COLORS.primary}20`,
+                    '& .MuiLinearProgress-bar': {
+                      background: `linear-gradient(90deg, ${COLORS.primary}, ${theme.palette.primary.dark})`,
                     },
                   }}
-                  className="neon-button"
-                >
-                  Upload Receipt
-                </Button>
-
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  startIcon={<Receipt />}
-                  sx={{ 
-                    mb: 2, 
-                    py: 1.5,
-                    transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
-                    '&:hover': { transform: 'translateY(-2px)' }
-                  }}
-                >
-                  Generate Report
-                </Button>
-
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  startIcon={<TrendingUp />}
-                  sx={{ 
-                    py: 1.5,
-                    transition: `all ${ANIMATION_DURATIONS.MEDIUM}ms ease`,
-                    '&:hover': { transform: 'translateY(-2px)' }
-                  }}
-                >
-                  View Analytics
-                </Button>
-
-                <Box sx={{ mt: 3, p: 2, borderRadius: 2, background: `${theme.palette.background.default}50` }}>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                    Monthly Budget Progress
-                  </Typography>
-                  <LinearProgress
-                    variant="determinate"
-                    value={parseFloat(budgetUsed)}
-                    sx={{
-                      height: 8,
-                      borderRadius: 4,
-                      backgroundColor: `${COLORS.primary}20`,
-                      '& .MuiLinearProgress-bar': {
-                        background: `linear-gradient(90deg, ${COLORS.primary}, ${COLORS.secondary})`,
-                        borderRadius: 4,
-                        transition: `all ${ANIMATION_DURATIONS.LONG}ms ease`,
-                      },
-                    }}
-                    className="animated-progress"
-                  />
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                    {formatCurrency(totalSpent)} of {formatCurrency(budgetLimit)} used ({budgetUsed})
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
-          </Fade>
+                />
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  {formatCurrency(totalSpent)} of {formatCurrency(budgetLimit)} used ({budgetUsed})
+                </Typography>
+              </Box>
+            </CardContent>
+          </Card>
         </Grid>
       </Grid>
     </Box>

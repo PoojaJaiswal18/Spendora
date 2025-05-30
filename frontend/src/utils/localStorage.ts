@@ -14,7 +14,8 @@ export type StorageKey =
   | 'offlineData'
   | 'tempUploads'
   | 'analyticsTimeRange'
-  | 'recentPages'  ; 
+  | 'recentPages' 
+  |'lastDashboardVisit' ; 
 
 export interface StorageOptions {
   encrypt?: boolean;
