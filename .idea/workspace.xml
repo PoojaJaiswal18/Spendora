@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a96b0ffe-0eec-43ea-ba79-788004bd181b" name="Changes" comment="" />
+    <list default="true" id="a96b0ffe-0eec-43ea-ba79-788004bd181b" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/jaiswal/util/OCRUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jaiswal/util/OCRUtils.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -111,7 +113,7 @@
       <workItem from="1748542381445" duration="386000" />
       <workItem from="1748618333205" duration="3309000" />
       <workItem from="1748669258440" duration="1385000" />
-      <workItem from="1748759627429" duration="998000" />
+      <workItem from="1748759627429" duration="1032000" />
     </task>
     <servers />
   </component>
