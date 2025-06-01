@@ -1,1 +1,13 @@
- 
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/spendora_dev
+      database: spendora_dev
+  redis:
+    host: localhost
+    port: 6379
+logging:
+  level:
+    root: DEBUG
+    com.jaiswal: DEBUG
+
