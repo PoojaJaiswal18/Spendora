@@ -20,6 +20,12 @@ public class SwaggerConfig {
     @Value("${app.version:1.0.0}")
     private String appVersion;
 
+    @Value("${app.dev-url:http://localhost:8080}")
+    private String devUrl;
+
+    @Value("${app.prod-url:https://api.spendora.com}")
+    private String prodUrl;
+
     @Bean
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
@@ -36,8 +42,8 @@ public class SwaggerConfig {
                                 .name("MIT License")
                                 .url("https://opensource.org/licenses/MIT")))
                 .servers(List.of(
-                        new Server().url("http://localhost:8080").description("Development Server"),
-                        new Server().url("https://api.spendora.com").description("Production Server")))
+                        new Server().url(devUrl).description("Development Server"),
+                        new Server().url(prodUrl).description("Production Server")))
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
                 .components(new Components()
                         .addSecuritySchemes("bearerAuth",
@@ -48,4 +54,3 @@ public class SwaggerConfig {
                                         .description("JWT token for API authentication")));
     }
 }
-

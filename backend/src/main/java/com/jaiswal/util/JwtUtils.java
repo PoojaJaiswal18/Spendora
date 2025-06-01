@@ -61,6 +61,11 @@ public class JwtUtils {
         return getClaimFromToken(token, Claims::getSubject);
     }
 
+    // Added method that SecurityConfig expects
+    public String getUserNameFromJwtToken(String token) {
+        return getUsernameFromToken(token);
+    }
+
     public Date getExpirationDateFromToken(String token) {
         return getClaimFromToken(token, Claims::getExpiration);
     }
@@ -115,8 +120,12 @@ public class JwtUtils {
         }
     }
 
+    // Added method that SecurityConfig expects
+    public Boolean validateJwtToken(String token) {
+        return validateToken(token);
+    }
+
     public long getExpirationTime() {
         return jwtExpirationInSeconds * 1000L; // Convert to milliseconds
     }
 }
-
