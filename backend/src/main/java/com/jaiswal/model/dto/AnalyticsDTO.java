@@ -82,4 +82,3 @@ public class AnalyticsDTO {
         private Map<String, Object> data;
     }
 }
-

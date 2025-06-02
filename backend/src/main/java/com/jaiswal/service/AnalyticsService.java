@@ -1,9 +1,9 @@
 package com.jaiswal.service;
 
+import com.jaiswal.model.document.Category;
 import com.jaiswal.model.dto.AnalyticsDTO;
 import com.jaiswal.repository.ReceiptRepository;
 import com.jaiswal.repository.CategoryRepository;
-import com.jaiswal.util.DateUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -36,6 +37,27 @@ public class AnalyticsService {
                 .monthlyComparisons(generateMonthlyComparisons(userId))
                 .insights(generateInsights(userId, startDate, endDate))
                 .build();
+    }
+
+    // Added missing methods for controller compatibility
+    @Cacheable(value = "spendingTrends", key = "#userId + '_' + #startDate + '_' + #endDate")
+    public List<AnalyticsDTO.SpendingTrend> getSpendingTrends(String userId, LocalDate startDate, LocalDate endDate) {
+        return generateSpendingTrends(userId, startDate, endDate);
+    }
+
+    @Cacheable(value = "categoryBreakdown", key = "#userId + '_' + #startDate + '_' + #endDate")
+    public List<AnalyticsDTO.CategoryBreakdown> getCategoryBreakdown(String userId, LocalDate startDate, LocalDate endDate) {
+        return generateCategoryBreakdown(userId, startDate, endDate);
+    }
+
+    @Cacheable(value = "monthlyComparison", key = "#userId")
+    public List<AnalyticsDTO.MonthlyComparison> getMonthlyComparison(String userId) {
+        return generateMonthlyComparisons(userId);
+    }
+
+    @Cacheable(value = "insights", key = "#userId + '_' + #startDate + '_' + #endDate")
+    public List<AnalyticsDTO.InsightData> getInsights(String userId, LocalDate startDate, LocalDate endDate) {
+        return generateInsights(userId, startDate, endDate);
     }
 
     private AnalyticsDTO.SpendingSummary generateSpendingSummary(String userId, LocalDate startDate, LocalDate endDate) {
@@ -72,7 +94,7 @@ public class AnalyticsService {
         var categorySpending = receiptRepository.getCategorySpendingByUserAndDateRange(userId, startDate, endDate);
         var categories = categoryRepository.findByUserIdOrUserIdIsNullOrderByNameAsc(userId)
                 .stream()
-                .collect(Collectors.toMap(cat -> cat.getId(), cat -> cat));
+                .collect(Collectors.toMap(Category::getId, cat -> cat));
 
         BigDecimal totalSpending = categorySpending.stream()
                 .map(ReceiptRepository.CategorySpendingAggregation::getTotalAmount)
@@ -107,7 +129,7 @@ public class AnalyticsService {
                         .amount(daily.getTotalAmount())
                         .transactionCount(daily.getCount())
                         .build())
-                .sorted((a, b) -> a.getDate().compareTo(b.getDate()))
+                .sorted(Comparator.comparing(AnalyticsDTO.SpendingTrend::getDate))
                 .collect(Collectors.toList());
     }
 
@@ -171,6 +193,19 @@ public class AnalyticsService {
                     .build());
         }
 
+        // Budget alert insight
+        var spendingSummary = generateSpendingSummary(userId, startDate, endDate);
+        if (spendingSummary.getPercentageChange().compareTo(BigDecimal.valueOf(20)) > 0) {
+            insights.add(AnalyticsDTO.InsightData.builder()
+                    .type("BUDGET_ALERT")
+                    .title("Spending Increase Alert")
+                    .description(String.format("Your spending increased by %.1f%% compared to last month",
+                            spendingSummary.getPercentageChange()))
+                    .icon("⚠️")
+                    .data(Map.of("changePercentage", spendingSummary.getPercentageChange()))
+                    .build());
+        }
+
         return insights;
     }
 
@@ -178,6 +213,7 @@ public class AnalyticsService {
         if (previous.compareTo(BigDecimal.ZERO) == 0) {
             return current.compareTo(BigDecimal.ZERO) > 0 ? BigDecimal.valueOf(100) : BigDecimal.ZERO;
         }
+
         return current.subtract(previous)
                 .divide(previous, 4, RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100));
@@ -192,18 +228,14 @@ public class AnalyticsService {
         LocalDate startOfYear = LocalDate.now().withDayOfYear(1);
         LocalDate endOfYear = LocalDate.now().withDayOfYear(LocalDate.now().lengthOfYear());
 
-        return receiptRepository.getSpendingSummaryByUserAndDateRange(userId, startOfYear, endOfYear)
-                .map(summary -> summary.getTotalAmount() != null ? summary.getTotalAmount() : BigDecimal.ZERO)
-                .orElse(BigDecimal.ZERO);
+        return receiptRepository.getSpendingSummaryByUserAndDateRange(userId, startOfYear, endOfYear).filter(summary -> summary.getTotalAmount() != null).map(ReceiptRepository.SpendingSummaryAggregation::getTotalAmount).orElse(BigDecimal.ZERO);
     }
 
     private BigDecimal getMonthlyTotal(String userId, LocalDate month) {
         LocalDate startOfMonth = month.withDayOfMonth(1);
         LocalDate endOfMonth = month.withDayOfMonth(month.lengthOfMonth());
 
-        return receiptRepository.getSpendingSummaryByUserAndDateRange(userId, startOfMonth, endOfMonth)
-                .map(summary -> summary.getTotalAmount() != null ? summary.getTotalAmount() : BigDecimal.ZERO)
-                .orElse(BigDecimal.ZERO);
+        return receiptRepository.getSpendingSummaryByUserAndDateRange(userId, startOfMonth, endOfMonth).filter(summary -> summary.getTotalAmount() != null).map(ReceiptRepository.SpendingSummaryAggregation::getTotalAmount).orElse(BigDecimal.ZERO);
     }
 
     // Default implementation for aggregation interface
@@ -218,4 +250,3 @@ public class AnalyticsService {
         public Integer getCount() { return 0; }
     }
 }
-
