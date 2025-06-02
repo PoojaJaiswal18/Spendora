@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
@@ -30,7 +29,7 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class OCRService {
 
-    @Value("${app.ocr.tesseract-path:/usr/bin/tesseract}")
+    @Value("${app.ocr.tesseract-path:C:/Program Files/Tesseract-OCR/tesseract.exe}")
     private String tesseractPath;
 
     @Value("${app.ocr.temp-dir:${java.io.tmpdir}/ocr}")
@@ -99,9 +98,9 @@ public class OCRService {
     private Path preprocessImage(Path inputFile) throws IOException, InterruptedException {
         Path outputFile = Path.of(tempDir, "processed_" + inputFile.getFileName());
 
-        // Use ImageMagick to enhance image quality
+        // Use ImageMagick to enhance image quality (if available)
         ProcessBuilder pb = new ProcessBuilder(
-                "convert",
+                "magick", // Updated for newer ImageMagick versions
                 inputFile.toString(),
                 "-density", "300",
                 "-type", "Grayscale",
@@ -111,15 +110,20 @@ public class OCRService {
                 outputFile.toString()
         );
 
-        Process process = pb.start();
-        int exitCode = process.waitFor();
+        try {
+            Process process = pb.start();
+            int exitCode = process.waitFor();
 
-        if (exitCode != 0) {
-            log.warn("ImageMagick preprocessing failed, using original image");
+            if (exitCode != 0) {
+                log.warn("ImageMagick preprocessing failed, using original image");
+                return inputFile;
+            }
+
+            return outputFile;
+        } catch (IOException e) {
+            log.warn("ImageMagick not available, using original image: {}", e.getMessage());
             return inputFile;
         }
-
-        return outputFile;
     }
 
     private String extractTextWithTesseract(Path imageFile) throws IOException, InterruptedException {
