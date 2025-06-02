@@ -19,6 +19,5 @@ public class LoginRequest {
     @NotBlank(message = "Password is required")
     private String password;
 
-    private Boolean rememberMe = false;
+    private boolean rememberMe;
 }
-

@@ -19,7 +19,7 @@ import java.util.function.Function;
 @Component
 public class JwtUtils {
 
-    @Value("${app.jwt.secret:mySecretKey}")
+    @Value("${app.jwt.secret:mySecretKeyThatIsAtLeast32CharactersLongForHS512}")
     private String jwtSecret;
 
     @Value("${app.jwt.expiration:86400}") // 24 hours in seconds
@@ -49,11 +49,11 @@ public class JwtUtils {
         Instant expiration = now.plus(expirationInSeconds, ChronoUnit.SECONDS);
 
         return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(subject)
-                .setIssuedAt(Date.from(now))
-                .setExpiration(Date.from(expiration))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                .claims(claims)  // Using claims() instead of setClaims()
+                .subject(subject)  // Using subject() instead of setSubject()
+                .issuedAt(Date.from(now))  // Using issuedAt() instead of setIssuedAt()
+                .expiration(Date.from(expiration))  // Using expiration() instead of setExpiration()
+                .signWith(getSigningKey())  // Simplified signWith() method
                 .compact();
     }
 
@@ -61,7 +61,7 @@ public class JwtUtils {
         return getClaimFromToken(token, Claims::getSubject);
     }
 
-    // Added method that SecurityConfig expects
+    // Method that SecurityConfig expects
     public String getUserNameFromJwtToken(String token) {
         return getUsernameFromToken(token);
     }
@@ -77,11 +77,11 @@ public class JwtUtils {
 
     private Claims getAllClaimsFromToken(String token) {
         try {
-            return Jwts.parserBuilder()
-                    .setSigningKey(getSigningKey())
+            return Jwts.parser()  // Using parser() instead of parserBuilder()
+                    .verifyWith(getSigningKey())  // Using verifyWith() instead of setSigningKey()
                     .build()
-                    .parseClaimsJws(token)
-                    .getBody();
+                    .parseSignedClaims(token)  // Using parseSignedClaims() instead of parseClaimsJws()
+                    .getPayload();  // Using getPayload() instead of getBody()
         } catch (JwtException e) {
             log.error("Error parsing JWT token", e);
             throw e;
@@ -109,10 +109,10 @@ public class JwtUtils {
 
     public Boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder()
-                    .setSigningKey(getSigningKey())
+            Jwts.parser()
+                    .verifyWith(getSigningKey())
                     .build()
-                    .parseClaimsJws(token);
+                    .parseSignedClaims(token);
             return true;
         } catch (JwtException e) {
             log.error("JWT validation failed", e);
@@ -120,7 +120,7 @@ public class JwtUtils {
         }
     }
 
-    // Added method that SecurityConfig expects
+    // Method that SecurityConfig expects
     public Boolean validateJwtToken(String token) {
         return validateToken(token);
     }

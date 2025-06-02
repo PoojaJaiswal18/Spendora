@@ -6,27 +6,15 @@
   <component name="ChangeListManager">
     <list default="true" id="4a143795-31e1-4218-a5f2-ffc2f0ba96fb" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/jaiswal/exception/InvalidFileException.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jaiswal/exception/InvalidFileException.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/jaiswal/model/document/CommunityInsight.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jaiswal/model/document/CommunityInsight.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/jaiswal/model/document/Receipt.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jaiswal/model/document/Receipt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/jaiswal/model/document/UserChallenge.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jaiswal/model/document/UserChallenge.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/jaiswal/model/dto/ChallengeDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jaiswal/model/dto/ChallengeDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/jaiswal/model/dto/ReceiptDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jaiswal/model/dto/ReceiptDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/jaiswal/model/dto/ReportDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jaiswal/model/dto/ReportDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/jaiswal/repository/CategoryRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jaiswal/repository/CategoryRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/jaiswal/repository/ChallengeRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jaiswal/repository/ChallengeRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/jaiswal/repository/CommunityInsightRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jaiswal/repository/CommunityInsightRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/jaiswal/repository/ReceiptRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jaiswal/repository/ReceiptRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/jaiswal/repository/UserChallengeRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jaiswal/repository/UserChallengeRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/jaiswal/service/AnonymizationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jaiswal/service/AnonymizationService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/jaiswal/service/CategoryService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jaiswal/service/CategoryService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/jaiswal/service/ChallengeService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jaiswal/service/ChallengeService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/jaiswal/service/OCRService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jaiswal/service/OCRService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/jaiswal/service/ReceiptService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jaiswal/service/ReceiptService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/jaiswal/service/ReportService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jaiswal/service/ReportService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/jaiswal/util/FileUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jaiswal/util/FileUtils.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/jaiswal/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jaiswal/controller/UserController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/jaiswal/model/document/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jaiswal/model/document/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/jaiswal/model/dto/LoginRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jaiswal/model/dto/LoginRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/jaiswal/model/dto/LoginResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jaiswal/model/dto/LoginResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/jaiswal/model/dto/UserDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jaiswal/model/dto/UserDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/jaiswal/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jaiswal/repository/UserRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/jaiswal/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jaiswal/service/UserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/jaiswal/util/JwtUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jaiswal/util/JwtUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/jaiswal/util/ValidationUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jaiswal/util/ValidationUtils.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,6 +36,23 @@
     &quot;accountId&quot;: &quot;4c7b050a-dcef-48e4-89d0-a24c778ce8b5&quot;
   }
 }</component>
+  <component name="IlluminatedCloudWorkspaceSettings">
+    <option name="projectWorkspaceSettings">
+      <ProjectWorkspaceSettings>
+        <option name="anonymousApexSettings">
+          <AnonymousApexSettings>
+            <option name="savedDocuments">
+              <list>
+                <AnonymousApexSavedDocument>
+                  <option name="name" value="Anonymous Apex 1" />
+                </AnonymousApexSavedDocument>
+              </list>
+            </option>
+          </AnonymousApexSettings>
+        </option>
+      </ProjectWorkspaceSettings>
+    </option>
+  </component>
   <component name="MavenImportPreferences">
     <option name="generalSettings">
       <MavenGeneralSettings>
@@ -137,7 +142,7 @@
       <workItem from="1748844739243" duration="35000" />
       <workItem from="1748844790927" duration="176000" />
       <workItem from="1748844974461" duration="221000" />
-      <workItem from="1748845213608" duration="3770000" />
+      <workItem from="1748845213608" duration="5716000" />
     </task>
     <servers />
   </component>

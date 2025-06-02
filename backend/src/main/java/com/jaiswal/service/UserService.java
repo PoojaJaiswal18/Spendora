@@ -4,12 +4,18 @@ import com.jaiswal.exception.ResourceNotFoundException;
 import com.jaiswal.exception.ValidationException;
 import com.jaiswal.model.document.User;
 import com.jaiswal.model.dto.UserDTO;
+import com.jaiswal.model.dto.LoginRequest;
+import com.jaiswal.model.dto.LoginResponse;
 import com.jaiswal.repository.UserRepository;
 import com.jaiswal.util.ValidationUtils;
+import com.jaiswal.util.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Set;
 
 @Slf4j
@@ -29,6 +34,8 @@ public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtils jwtUtils;
 
     @Override
     public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
@@ -51,13 +58,13 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
-    public UserDTO createUser(UserDTO userDTO, String password) {
+    public UserDTO register(UserDTO userDTO) {
         validateUserCreation(userDTO);
 
         User user = User.builder()
                 .username(userDTO.getUsername())
                 .email(userDTO.getEmail())
-                .password(passwordEncoder.encode(password))
+                .password(passwordEncoder.encode("defaultPassword123"))
                 .firstName(userDTO.getFirstName())
                 .lastName(userDTO.getLastName())
                 .roles(userDTO.getRoles() != null ? userDTO.getRoles() : Set.of("USER"))
@@ -76,9 +83,56 @@ public class UserService implements UserDetailsService {
                 .build();
 
         User savedUser = userRepository.save(user);
-        log.info("Created new user: {}", savedUser.getUsername());
-
+        log.info("Registered new user: {}", savedUser.getUsername());
         return convertToDTO(savedUser);
+    }
+
+    @Transactional
+    public LoginResponse login(LoginRequest loginRequest) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getUsernameOrEmail(),
+                            loginRequest.getPassword()
+                    )
+            );
+
+            User user = (User) authentication.getPrincipal();
+
+            updateLastLogin(user.getId());
+
+            String accessToken = jwtUtils.generateToken(user);
+            String refreshToken = jwtUtils.generateRefreshToken(user);
+
+            return LoginResponse.builder()
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
+                    .tokenType("Bearer")
+                    .expiresIn(jwtUtils.getExpirationTime())
+                    .user(convertToDTO(user))
+                    .loginTime(LocalDateTime.now())
+                    .build();
+
+        } catch (Exception e) {
+            log.error("Login failed for user: {}", loginRequest.getUsernameOrEmail(), e);
+            throw new ValidationException("Invalid username/email or password");
+        }
+    }
+
+    @Cacheable(value = "users", key = "#userId")
+    public UserDTO getProfile(String userId) {
+        return getUserById(userId);
+    }
+
+    @Transactional
+    @CacheEvict(value = "users", key = "#userId")
+    public UserDTO updateProfile(String userId, UserDTO userDTO) {
+        return updateUser(userId, userDTO);
+    }
+
+    @Transactional
+    public void logout(String userId) {
+        log.info("User logged out: {}", userId);
     }
 
     @Transactional
@@ -87,26 +141,27 @@ public class UserService implements UserDetailsService {
         User existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
-        // Update only non-null fields
         if (userDTO.getFirstName() != null) {
             existingUser.setFirstName(userDTO.getFirstName());
         }
+
         if (userDTO.getLastName() != null) {
             existingUser.setLastName(userDTO.getLastName());
         }
+
         if (userDTO.getEmail() != null && !userDTO.getEmail().equals(existingUser.getEmail())) {
             if (userRepository.existsByEmail(userDTO.getEmail())) {
                 throw new ValidationException("Email already exists: " + userDTO.getEmail());
             }
             existingUser.setEmail(userDTO.getEmail());
         }
+
         if (userDTO.getProfileImageUrl() != null) {
             existingUser.setProfileImageUrl(userDTO.getProfileImageUrl());
         }
 
         User updatedUser = userRepository.save(existingUser);
         log.info("Updated user: {}", updatedUser.getUsername());
-
         return convertToDTO(updatedUser);
     }
 
@@ -117,32 +172,6 @@ public class UserService implements UserDetailsService {
             user.setLastLoginAt(LocalDateTime.now());
             userRepository.save(user);
         });
-    }
-
-    @Transactional
-    @CacheEvict(value = "users", key = "#userId")
-    public void deleteUser(String userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new ResourceNotFoundException("User not found with id: " + userId);
-        }
-        userRepository.deleteById(userId);
-        log.info("Deleted user with id: {}", userId);
-    }
-
-    public boolean existsByUsername(String username) {
-        return userRepository.existsByUsername(username);
-    }
-
-    public boolean existsByEmail(String email) {
-        return userRepository.existsByEmail(email);
-    }
-
-    public List<UserDTO> getActiveUsers() {
-        LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
-        return userRepository.findActiveUsersSince(thirtyDaysAgo)
-                .stream()
-                .map(this::convertToDTO)
-                .toList();
     }
 
     private void validateUserCreation(UserDTO userDTO) {

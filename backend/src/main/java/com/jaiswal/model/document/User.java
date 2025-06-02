@@ -1,6 +1,5 @@
 package com.jaiswal.model.document;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,8 +18,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Data
 @Builder
@@ -43,8 +42,6 @@ public class User implements UserDetails {
     private String email;
 
     @NotBlank(message = "Password is required")
-    @Size(min = 6, message = "Password must be at least 6 characters")
-    @JsonIgnore
     private String password;
 
     @NotBlank(message = "First name is required")
@@ -58,6 +55,8 @@ public class User implements UserDetails {
     @Builder.Default
     private Set<String> roles = Set.of("USER");
 
+    private UserPreferences preferences;
+
     @Builder.Default
     private boolean enabled = true;
 
@@ -70,8 +69,6 @@ public class User implements UserDetails {
     @Builder.Default
     private boolean credentialsNonExpired = true;
 
-    private UserPreferences preferences;
-
     @CreatedDate
     private LocalDateTime createdAt;
 
@@ -82,11 +79,20 @@ public class User implements UserDetails {
 
     // UserDetails implementation
     @Override
-    @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles.stream()
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
-                .toList();
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getUsername() {
+        return username;
     }
 
     @Override
@@ -116,16 +122,20 @@ public class User implements UserDetails {
     public static class UserPreferences {
         @Builder.Default
         private String currency = "USD";
+
         @Builder.Default
         private String dateFormat = "MM/dd/yyyy";
+
         @Builder.Default
         private String timezone = "UTC";
+
         @Builder.Default
         private boolean emailNotifications = true;
+
         @Builder.Default
         private boolean pushNotifications = true;
+
         @Builder.Default
         private String theme = "light";
     }
 }
-

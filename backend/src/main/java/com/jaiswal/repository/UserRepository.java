@@ -29,4 +29,3 @@ public interface UserRepository extends MongoRepository<User, String> {
     @Query(value = "{'roles': ?0}", count = true)
     long countByRole(String role);
 }
-

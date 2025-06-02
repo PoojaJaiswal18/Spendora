@@ -1,6 +1,5 @@
 package com.jaiswal.model.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,7 +15,6 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserDTO {
 
     private String id;
@@ -36,13 +34,9 @@ public class UserDTO {
     private String lastName;
 
     private String profileImageUrl;
-
     private Set<String> roles;
-
     private UserPreferencesDTO preferences;
-
     private LocalDateTime createdAt;
-
     private LocalDateTime lastLoginAt;
 
     @Data
@@ -53,9 +47,8 @@ public class UserDTO {
         private String currency;
         private String dateFormat;
         private String timezone;
-        private Boolean emailNotifications;
-        private Boolean pushNotifications;
+        private boolean emailNotifications;
+        private boolean pushNotifications;
         private String theme;
     }
 }
-
