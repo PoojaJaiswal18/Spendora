@@ -19,9 +19,17 @@ public class ReportDTO {
     private String reportId;
     private String reportType;
     private String title;
+    private String userId;
+    private String period;
     private LocalDate startDate;
     private LocalDate endDate;
     private LocalDate generatedAt;
+
+    // Added missing fields for ReportService compatibility
+    private BigDecimal totalAmount;
+    private Map<String, BigDecimal> categoryBreakdown;
+    private List<ReceiptDTO> receipts;
+
     private ReportSummary summary;
     private List<ReportSection> sections;
     private Map<String, Object> metadata;
@@ -63,5 +71,20 @@ public class ReportDTO {
         private String merchant;
         private Map<String, Object> details;
     }
-}
 
+    // Helper method to set period based on dates
+    public void setPeriod(LocalDate startDate, LocalDate endDate) {
+        if (startDate != null && endDate != null) {
+            this.period = startDate.toString() + " to " + endDate.toString();
+        }
+    }
+
+    // Helper method to set amount from summary
+    public BigDecimal getAmount() {
+        return this.totalAmount;
+    }
+
+    public void setAmount(BigDecimal amount) {
+        this.totalAmount = amount;
+    }
+}

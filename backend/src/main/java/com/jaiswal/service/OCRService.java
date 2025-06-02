@@ -77,10 +77,10 @@ public class OCRService {
         });
     }
 
-    public Receipt.ReceiptData parseReceiptData(String extractedText) {
+    public ParsedReceiptData parseReceiptData(String extractedText) {
         log.info("Parsing receipt data from extracted text");
 
-        return Receipt.ReceiptData.builder()
+        return ParsedReceiptData.builder()
                 .merchantName(extractMerchantName(extractedText))
                 .totalAmount(extractTotalAmount(extractedText))
                 .date(extractDate(extractedText))
@@ -133,8 +133,8 @@ public class OCRService {
         );
 
         Process process = pb.start();
-
         StringBuilder output = new StringBuilder();
+
         try (var reader = process.inputReader()) {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -187,7 +187,6 @@ public class OCRService {
 
     private LocalDate extractDate(String text) {
         Matcher matcher = DATE_PATTERN.matcher(text);
-
         while (matcher.find()) {
             String dateStr = matcher.group(1);
             try {
@@ -204,7 +203,6 @@ public class OCRService {
                 // Continue searching
             }
         }
-
         return LocalDate.now(); // Default to today if no date found
     }
 
@@ -231,14 +229,13 @@ public class OCRService {
                 }
             }
         }
-
         return items;
     }
 
     private Receipt.PaymentInfo extractPaymentInfo(String text) {
         String upperText = text.toUpperCase();
-
         String method = "UNKNOWN";
+
         if (upperText.contains("CASH")) {
             method = "CASH";
         } else if (upperText.contains("CARD") || upperText.contains("VISA") || upperText.contains("MASTERCARD")) {
@@ -301,68 +298,16 @@ public class OCRService {
         }
     }
 
-    // Inner class for parsed receipt data
-    public static class ReceiptData {
+    // Separate class for parsed receipt data
+    @lombok.Data
+    @lombok.Builder
+    @lombok.NoArgsConstructor
+    @lombok.AllArgsConstructor
+    public static class ParsedReceiptData {
         private String merchantName;
         private BigDecimal totalAmount;
         private LocalDate date;
         private List<Receipt.ReceiptItem> items;
         private Receipt.PaymentInfo paymentInfo;
-
-        // Builder pattern implementation
-        public static ReceiptDataBuilder builder() {
-            return new ReceiptDataBuilder();
-        }
-
-        public static class ReceiptDataBuilder {
-            private String merchantName;
-            private BigDecimal totalAmount;
-            private LocalDate date;
-            private List<Receipt.ReceiptItem> items;
-            private Receipt.PaymentInfo paymentInfo;
-
-            public ReceiptDataBuilder merchantName(String merchantName) {
-                this.merchantName = merchantName;
-                return this;
-            }
-
-            public ReceiptDataBuilder totalAmount(BigDecimal totalAmount) {
-                this.totalAmount = totalAmount;
-                return this;
-            }
-
-            public ReceiptDataBuilder date(LocalDate date) {
-                this.date = date;
-                return this;
-            }
-
-            public ReceiptDataBuilder items(List<Receipt.ReceiptItem> items) {
-                this.items = items;
-                return this;
-            }
-
-            public ReceiptDataBuilder paymentInfo(Receipt.PaymentInfo paymentInfo) {
-                this.paymentInfo = paymentInfo;
-                return this;
-            }
-
-            public ReceiptData build() {
-                ReceiptData data = new ReceiptData();
-                data.merchantName = this.merchantName;
-                data.totalAmount = this.totalAmount;
-                data.date = this.date;
-                data.items = this.items;
-                data.paymentInfo = this.paymentInfo;
-                return data;
-            }
-        }
-
-        // Getters
-        public String getMerchantName() { return merchantName; }
-        public BigDecimal getTotalAmount() { return totalAmount; }
-        public LocalDate getDate() { return date; }
-        public List<Receipt.ReceiptItem> getItems() { return items; }
-        public Receipt.PaymentInfo getPaymentInfo() { return paymentInfo; }
     }
 }
-

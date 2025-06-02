@@ -13,6 +13,14 @@ import java.util.Optional;
 @Repository
 public interface UserChallengeRepository extends MongoRepository<UserChallenge, String> {
 
+    // Added missing methods
+    List<UserChallenge> findByUserId(String userId);
+
+    boolean existsByUserIdAndChallengeId(String userId, String challengeId);
+
+    @Query("{'challengeId': ?0, 'status': 'ACTIVE'}")
+    List<UserChallenge> findByChallengeIdOrderByProgressDesc(String challengeId);
+
     List<UserChallenge> findByUserIdAndStatus(String userId, UserChallenge.UserChallengeStatus status);
 
     Optional<UserChallenge> findByUserIdAndChallengeId(String userId, String challengeId);
@@ -32,5 +40,12 @@ public interface UserChallengeRepository extends MongoRepository<UserChallenge, 
 
     @Query(value = "{'challengeId': ?0, 'status': 'ACTIVE'}", count = true)
     long countActiveByChallengeId(String challengeId);
-}
 
+    // Additional useful methods
+    List<UserChallenge> findByUserIdAndChallengeIdIn(String userId, List<String> challengeIds);
+
+    @Query("{'userId': ?0, 'status': {'$in': ['ACTIVE', 'COMPLETED']}}")
+    List<UserChallenge> findUserChallengeHistory(String userId);
+
+    void deleteByUserIdAndChallengeId(String userId, String challengeId);
+}

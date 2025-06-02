@@ -16,6 +16,11 @@ public interface ChallengeRepository extends MongoRepository<Challenge, String> 
     @Query("{'status': 'ACTIVE', 'startDate': {'$lte': ?0}, 'endDate': {'$gte': ?0}}")
     List<Challenge> findActiveChallenges(LocalDateTime currentDate);
 
+    // Overloaded method without parameter for backward compatibility
+    default List<Challenge> findActiveChallenges() {
+        return findActiveChallenges(LocalDateTime.now());
+    }
+
     Page<Challenge> findByStatusOrderByCreatedAtDesc(Challenge.ChallengeStatus status, Pageable pageable);
 
     @Query("{'type': ?0, 'status': 'ACTIVE'}")
@@ -28,5 +33,11 @@ public interface ChallengeRepository extends MongoRepository<Challenge, String> 
     List<Challenge> findExpiredChallenges(LocalDateTime currentDate);
 
     long countByStatus(Challenge.ChallengeStatus status);
-}
 
+    // Additional useful methods
+    List<Challenge> findByStatusAndStartDateBeforeAndEndDateAfter(
+            Challenge.ChallengeStatus status, LocalDateTime startDate, LocalDateTime endDate);
+
+    @Query("{'categoryIds': {'$in': [?0]}, 'status': 'ACTIVE'}")
+    List<Challenge> findActiveChallengesByCategory(String categoryId);
+}

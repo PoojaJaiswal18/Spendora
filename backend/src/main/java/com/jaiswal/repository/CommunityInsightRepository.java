@@ -24,5 +24,16 @@ public interface CommunityInsightRepository extends MongoRepository<CommunityIns
     List<CommunityInsight> findValidInsightsByCategory(String category, LocalDateTime currentDate);
 
     void deleteByValidUntilBefore(LocalDateTime date);
-}
 
+    // Added missing method
+    Optional<CommunityInsight> findTopByOrderByGeneratedAtDesc();
+
+    // Additional useful methods
+    @Query("{'insightType': ?0, 'validUntil': {'$gte': ?1}}")
+    List<CommunityInsight> findValidInsightsByType(String insightType, LocalDateTime currentDate);
+
+    @Query("{'period': ?0, 'validUntil': {'$gte': ?1}}")
+    List<CommunityInsight> findValidInsightsByPeriod(String period, LocalDateTime currentDate);
+
+    long countByInsightTypeAndPeriod(String insightType, String period);
+}

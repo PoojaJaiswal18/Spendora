@@ -69,7 +69,6 @@ public class CategoryService {
 
         Category savedCategory = categoryRepository.save(category);
         log.info("Created category: {} for user: {}", savedCategory.getName(), userId);
-
         return convertToDTO(savedCategory);
     }
 
@@ -87,25 +86,29 @@ public class CategoryService {
         if (categoryDTO.getName() != null) {
             existingCategory.setName(categoryDTO.getName());
         }
+
         if (categoryDTO.getDescription() != null) {
             existingCategory.setDescription(categoryDTO.getDescription());
         }
+
         if (categoryDTO.getColor() != null) {
             existingCategory.setColor(categoryDTO.getColor());
         }
+
         if (categoryDTO.getIcon() != null) {
             existingCategory.setIcon(categoryDTO.getIcon());
         }
+
         if (categoryDTO.getKeywords() != null) {
             existingCategory.setKeywords(categoryDTO.getKeywords());
         }
+
         if (categoryDTO.getBudget() != null) {
             existingCategory.setBudget(convertBudgetFromDTO(categoryDTO.getBudget()));
         }
 
         Category updatedCategory = categoryRepository.save(existingCategory);
         log.info("Updated category: {}", updatedCategory.getName());
-
         return convertToDTO(updatedCategory);
     }
 
@@ -207,9 +210,7 @@ public class CategoryService {
             var monthlySpending = receiptRepository.getSpendingSummaryByUserAndDateRange(
                     category.getUserId(), startOfMonth, endOfMonth);
 
-            dto.setCurrentMonthSpending(monthlySpending
-                    .map(summary -> summary.getTotalAmount() != null ? summary.getTotalAmount() : BigDecimal.ZERO)
-                    .orElse(BigDecimal.ZERO));
+            dto.setCurrentMonthSpending(monthlySpending.filter(summary -> summary.getTotalAmount() != null).map(ReceiptRepository.SpendingSummaryAggregation::getTotalAmount).orElse(BigDecimal.ZERO));
         }
 
         return dto;
@@ -252,4 +253,3 @@ public class CategoryService {
         return keywords.stream().anyMatch(text::contains);
     }
 }
-

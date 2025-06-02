@@ -29,6 +29,25 @@ public interface ReceiptRepository extends MongoRepository<Receipt, String> {
     @Query("{'userId': ?0, 'totalAmount': {'$gte': ?1, '$lte': ?2}}")
     List<Receipt> findByUserIdAndTotalAmountBetween(String userId, BigDecimal minAmount, BigDecimal maxAmount);
 
+    // Added missing methods for ReportService
+    List<Receipt> findByUserId(String userId);
+
+    @Query("{'userId': ?0, '$expr': {'$eq': [{'$month': '$date'}, ?1]}}")
+    List<Receipt> findByUserIdAndMonth(String userId, int month);
+
+    @Query("{'userId': ?0, '$expr': {'$eq': [{'$year': '$date'}, ?1]}}")
+    List<Receipt> findByUserIdAndYear(String userId, int year);
+
+    @Query("{'userId': ?0, 'date': {'$gte': ?1, '$lte': ?2}}")
+    List<Receipt> findCustom(String userId, LocalDate startDate, LocalDate endDate);
+
+    @Query("{'userId': ?0, 'paymentInfo.tax': {'$exists': true, '$ne': null}}")
+    List<Receipt> findTaxRelevant(String userId);
+
+    // Added missing method for CategoryService
+    @Query(value = "{'userId': ?0, 'categoryId': ?1}", count = true)
+    long countByUserIdAndCategoryId(String userId, String categoryId);
+
     @Aggregation(pipeline = {
             "{'$match': {'userId': ?0, 'date': {'$gte': ?1, '$lte': ?2}}}",
             "{'$group': {'_id': '$categoryId', 'totalAmount': {'$sum': '$totalAmount'}, 'count': {'$sum': 1}}}",
@@ -73,4 +92,3 @@ public interface ReceiptRepository extends MongoRepository<Receipt, String> {
         Integer getCount();
     }
 }
-

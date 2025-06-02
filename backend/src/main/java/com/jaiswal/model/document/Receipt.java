@@ -49,17 +49,11 @@ public class Receipt {
     private LocalDate date;
 
     private String categoryId;
-
     private String description;
-
     private String imageUrl;
-
     private String originalFileName;
-
     private List<ReceiptItem> items;
-
     private OCRData ocrData;
-
     private PaymentInfo paymentInfo;
 
     @Builder.Default
@@ -83,6 +77,40 @@ public class Receipt {
         private BigDecimal unitPrice;
         private BigDecimal totalPrice;
         private String category;
+    }
+// Add these methods to your existing Receipt class if they're missing:
+
+    public String getCategoryId() {
+        return this.categoryId;
+    }
+
+    public void setCategoryId(String categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public BigDecimal getTotalAmount() {
+        return this.totalAmount;
+    }
+
+    public void setTotalAmount(BigDecimal totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
+    // Helper methods for backward compatibility
+    public String getCategory() {
+        return this.categoryId;
+    }
+
+    public void setCategory(String category) {
+        this.categoryId = category;
+    }
+
+    public BigDecimal getAmount() {
+        return this.totalAmount;
+    }
+
+    public void setAmount(BigDecimal amount) {
+        this.totalAmount = amount;
     }
 
     @Data
@@ -112,5 +140,7 @@ public class Receipt {
     public enum ReceiptStatus {
         PENDING, PROCESSING, PROCESSED, FAILED, ARCHIVED
     }
+
 }
+
 
