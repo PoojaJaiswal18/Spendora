@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -19,7 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -61,6 +63,51 @@ public class ReceiptService {
         }
 
         return convertToDTO(receipt);
+    }
+
+    // Added missing method for filtered receipts
+    public Page<ReceiptDTO> getFilteredReceipts(String userId, Pageable pageable, String categoryId,
+                                                LocalDate startDate, LocalDate endDate,
+                                                BigDecimal minAmount, BigDecimal maxAmount) {
+
+        List<Receipt> allReceipts = receiptRepository.findByUserId(userId);
+
+        // Apply filters
+        List<Receipt> filteredReceipts = allReceipts.stream()
+                .filter(receipt -> categoryId == null || categoryId.equals(receipt.getCategoryId()))
+                .filter(receipt -> startDate == null || !receipt.getDate().isBefore(startDate))
+                .filter(receipt -> endDate == null || !receipt.getDate().isAfter(endDate))
+                .filter(receipt -> minAmount == null || receipt.getTotalAmount().compareTo(minAmount) >= 0)
+                .filter(receipt -> maxAmount == null || receipt.getTotalAmount().compareTo(maxAmount) <= 0)
+                .collect(Collectors.toList());
+
+        // Manual pagination
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), filteredReceipts.size());
+
+        List<Receipt> pageContent = filteredReceipts.subList(start, end);
+        List<ReceiptDTO> pageContentDTO = pageContent.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(pageContentDTO, pageable, filteredReceipts.size());
+    }
+
+    // Added missing searchReceipts method
+    @Cacheable(value = "searchResults", key = "#userId + '_' + #query + '_' + #pageable.pageNumber")
+    public Page<ReceiptDTO> searchReceipts(String userId, String query, Pageable pageable) {
+        List<Receipt> searchResults = receiptRepository.findByUserIdAndMerchantNameContainingIgnoreCase(userId, query);
+
+        // Manual pagination for search results
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), searchResults.size());
+
+        List<Receipt> pageContent = searchResults.subList(start, end);
+        List<ReceiptDTO> pageContentDTO = pageContent.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(pageContentDTO, pageable, searchResults.size());
     }
 
     @Transactional
@@ -224,21 +271,20 @@ public class ReceiptService {
     private ReceiptDTO convertToDTO(Receipt receipt) {
         return ReceiptDTO.builder()
                 .id(receipt.getId())
-                .userId(receipt.getUserId()) // Added missing field
+                .userId(receipt.getUserId())
                 .merchantName(receipt.getMerchantName())
                 .totalAmount(receipt.getTotalAmount())
                 .date(receipt.getDate())
                 .categoryId(receipt.getCategoryId())
                 .description(receipt.getDescription())
                 .imageUrl(receipt.getImageUrl())
-                .originalFileName(receipt.getOriginalFileName()) // Added missing field
+                .originalFileName(receipt.getOriginalFileName())
                 .items(convertItemsToDTO(receipt.getItems()))
                 .status(receipt.getStatus())
                 .createdAt(receipt.getCreatedAt())
                 .updatedAt(receipt.getUpdatedAt())
                 .build();
     }
-
 
     private List<ReceiptDTO.ReceiptItemDTO> convertItemsToDTO(List<Receipt.ReceiptItem> items) {
         if (items == null) {
